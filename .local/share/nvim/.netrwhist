@@ -1,0 +1,12 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =9
+let g:netrw_dirhist_9='/home/sacresful/.local/share/nvim/plugged/lualine.nvim'
+let g:netrw_dirhist_8='/home/sacresful/.config/suckless/dwm/.git'
+let g:netrw_dirhist_7='/home/sacresful/.config/suckless/dwm'
+let g:netrw_dirhist_6='/etc/modprobe.d'
+let g:netrw_dirhist_5='/etc/X11/xorg.conf.d'
+let g:netrw_dirhist_4='/etc/X11/xinit'
+let g:netrw_dirhist_3='/etc/X11/xorg.conf.d'
+let g:netrw_dirhist_2='/etc/X11'
+let g:netrw_dirhist_1='/etc/X11/xinit/xinitrc.d'
+let g:netrw_dirhist_0='/usr/share/dbus-1/session.d'
