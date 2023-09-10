@@ -1,0 +1,10 @@
+#!/bin/sh
+#display disk space for /home on statusbar
+case $BLOCK_BUTTON in
+	1)  $TERMINAL -e lf ;;
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+home=/home
+
+echo "$(df -h | grep $home | awk '{print $4 "/" $2, $5}')"

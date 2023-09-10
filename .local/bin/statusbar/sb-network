@@ -1,0 +1,14 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1) "$TERMINAL" -e nmtui; pkill -RTMIN+4 dwmblocks ;;
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+# Ethernet
+[ "$(cat /sys/class/net/e*/operstate 2>/dev/null)" = 'up' ] && ethericon="🌐" || ethericon="❎"
+
+# TUN
+[ -n "$(cat /sys/class/net/tun*/operstate 2>/dev/null)" ] && tunicon=" 🔒"
+
+printf "%s%s%s\n" "$wifiicon" "$ethericon" "$tunicon"

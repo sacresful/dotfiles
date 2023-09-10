@@ -1,0 +1,2 @@
+#!/bin/sh
+notify-send "Starting synchronizing remote repositories" && pacman -Sy >> /home/sacresful/test1 && notify-send "Synchronized remote repositiories"

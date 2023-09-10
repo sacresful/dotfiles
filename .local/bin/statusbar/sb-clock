@@ -1,0 +1,13 @@
+#!/bin/sh
+
+
+#clock=$(date '+%I')
+
+case $BLOCK_BUTTON in
+	1) setsid -f "$TERMINAL" -e calcurse ;; 
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+# date "+%Y %b %d (%a) $icon%I:%M%p"
+
+date "+%b %d (%a) %I:%M%p"

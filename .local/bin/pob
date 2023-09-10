@@ -1,0 +1,3 @@
+#!/bin/sh
+
+wine ~/games/Path\ of\ Building\ Community/Path\ of\ Building.exe

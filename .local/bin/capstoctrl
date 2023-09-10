@@ -1,0 +1,5 @@
+#!/bin/sh
+ID=$(xinput list | grep AT | awk '/id=[0-9]+/{match($0, /id=([0-9]+)/, id); print id[1]}')
+if [ -n "$ID" ]; then
+    setxkbmap -device $ID -option caps:ctrl_modifier
+fi

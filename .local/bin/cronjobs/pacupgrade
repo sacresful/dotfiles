@@ -1,0 +1,2 @@
+#!/bin/sh
+notify-send "Starting downloading updates" && sudo pacman -Syuw --noconfirm && notify-send "Downloaded updates"

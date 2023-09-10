@@ -1,0 +1,8 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1) $TERMINAL -e htop ;;
+	6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+echo "$(free -h --giga | awk '/^Mem/ {print $3 "/" $2}')"

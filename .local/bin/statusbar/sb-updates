@@ -1,0 +1,6 @@
+#!/bin/sh
+case $BLOCK_BUTTON in 
+	1) setsid -f "$TERMINAL" -e sudo pacman -Sy ;;
+	6) "$TERMINAL" -e "$EDITOR" ;;
+esac
+pacman -Qu | grep -Fcv "[ignored]"

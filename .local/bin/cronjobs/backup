@@ -1,0 +1,2 @@
+* * * * * export DISPLAY=:0 && /usr/bin/notify-send "Hello from Cron"
+

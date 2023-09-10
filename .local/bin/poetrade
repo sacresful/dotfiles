@@ -1,0 +1,3 @@
+#!/bin/sh
+
+awakened-poe-trade --no-overlay
