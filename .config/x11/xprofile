@@ -1,0 +1,14 @@
+#!/bin/sh
+
+xrandr --dpi 96
+setxkbmap -layout pl
+setbg &
+
+autostart="capstoctrl redshift unclutter xcompmgr pipewire dwmblocks"
+eval $(ssh-agent)
+
+for program in $autostart; do
+	pidof -sx "$program" || "$program" &
+done >/dev/null 2>&1
+
+[ -n "$xrdbpid" ] && wait "$xrdbpid"
