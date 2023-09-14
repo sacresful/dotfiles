@@ -51,6 +51,7 @@ alias lf='lfub'
 alias dots='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 alias scripts='cd $HOME/.local/bin'
 alias wps='cd $HOME/pics/wallpapers/'
+alias xrdb='xrdb -l ~/.config/x11/xresources'
 
 # Change cursor shape for different vi modes.
 function zle-keymap-select () {
