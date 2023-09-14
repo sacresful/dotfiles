@@ -49,9 +49,8 @@ alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
 alias yt-dlp='yt-dlp -f bestvideo+bestaudio'
 alias lf='lfub'
 alias dots='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-alias xrdbl='xrdb -load "$XDG_CONFIG_HOME/x11/xresources"'
 alias scripts='cd $HOME/.local/bin'
-
+alias wps='cd $HOME/pics/wallpapers/'
 
 # Change cursor shape for different vi modes.
 function zle-keymap-select () {
