@@ -14,4 +14,4 @@ image viewer - nsxiv\
 video player - mpv\
 pdf viewer - zathura\
 wallpaper - xwallpaper\
-notify daemon - dunst\
+notify daemon - dunst
