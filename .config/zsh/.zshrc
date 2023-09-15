@@ -40,19 +40,19 @@ alias free="free -h"
 alias sl="cd ~/.config/suckless/" 
 alias scrot="scrot ~/pics/scrot/%d-%b-%Y_%H:%M.png"
 alias kilall="killall"
-alias nvidia-settings="nvidia-settings --config="$HOME/.config/nvidia/settings""
+alias nvidia-settings="nvidia-settings --config='$HOME/.config/nvidia/settings'"
 alias zhistory="cat $HOME/.cache/zsh/history"
 alias zcfg="cd ~/.config/zsh"
-alias minecraft="minecraft-launcher --workDir /home/sacresful/games/Minecraft"
-alias minecraft-launcher="minecraft-launcher --workDir /home/sacresful/games/Minecraft"
-alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
-alias yt-dlp='yt-dlp -f bestvideo+bestaudio'
-alias lf='lfub'
-alias dots='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-alias scripts='cd $HOME/.local/bin'
-alias wps='cd $HOME/pics/wallpapers/'
-alias xrdb='xrdb -l ~/.config/x11/xresources'
-
+alias minecraft="minecraft-launcher --workDir $HOME/games/Minecraft"
+alias minecraft-launcher="minecraft-launcher --workDir $HOME/games/Minecraft"
+alias cleanup="sudo pacman -Rns $(pacman -Qtdq)"
+alias yt-dlp="yt-dlp -f bestvideo+bestaudio"
+alias lf="lfub"
+alias dots="/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
+alias scripts="cd $HOME/.local/bin"
+alias wps="cd $HOME/pics/wallpapers/"
+alias xrdb="xrdb -l ~/.config/x11/xresources"
+alias sxiv="nsxiv"
 # Change cursor shape for different vi modes.
 function zle-keymap-select () {
     case $KEYMAP in
