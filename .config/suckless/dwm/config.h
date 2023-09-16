@@ -149,7 +149,7 @@ static const Key keys[] = {
 	{ WINDOWS|ShiftMask,		XK_s,	   spawn,	   {.v = scrot } },
 	{ WINDOWS|ShiftMask|ControlMask, XK_s,	   spawn,	   {.v = scrotFreeze } },
 	{ MODKEY,			XK_w,	   spawn,	   {.v = firefox } },
-	{ MODKEY,			XK_d,	   spawn,          {.v = discord } },
+//	{ MODKEY,			XK_d,	   spawn,          {.v = discord } },
 	{ MODKEY,			XK_e,	   spawn,	   {.v = filemanager } },
 	{ ALTGR|ControlMask,		XK_Delete, spawn,	   {.v = htop } },
 
