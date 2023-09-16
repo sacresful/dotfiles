@@ -5,7 +5,7 @@ setxkbmap -layout pl
 wp &
 light -S 25
 
-autostart="remaps redshift unclutter xcompmgr pipewire dwmblocks"
+autostart="remaps mpd redshift unclutter xcompmgr pipewire dwmblocks"
 eval $(ssh-agent)
 
 for program in $autostart; do
