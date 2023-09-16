@@ -7,7 +7,7 @@ Block blocks[] = {
 //    {"",	       x,     10},	
 //    {"",	       x,      9},	
 //    {"",	       x,      8},	
-    {"sb-updates",     0,      7},	
+    {"sb-updates",  3600,      7},	
     {"sb-disk",	    3600,      6},	
     {"sb-memory",     10,      5},	
     {"sb-network",     0,      4},	
