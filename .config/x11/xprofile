@@ -3,7 +3,7 @@
 xrandr --dpi 96
 setxkbmap -layout pl
 wp &
-light -S 25
+light -S 15
 
 autostart="remaps mpd redshift unclutter xcompmgr pipewire dwmblocks"
 eval $(ssh-agent)
