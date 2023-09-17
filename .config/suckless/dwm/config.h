@@ -92,7 +92,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbordercolor, "-sf", selfgcolor, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *scrot[] = { "scrot", "/home/sacresful/pics/scrot/%d-%b-%Y_%H:%M.png", "-s", "-e", "xclip -selection clipboard -t image/png -i $f", NULL };
 static const char *scrotFreeze[] = { "scrot", "/home/sacresful/pics/scrot/%d-%b-%Y_%H:%M.png", "-s", "-f", "-e", "xclip -selection clipboard -t image/png -i $f", NULL };
