@@ -206,6 +206,9 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } }, // send tag to monitor
 	{ MODKEY|ShiftMask,             XK_Tab,    tagswapmon,     {.i = +1 } },
 // useless	{ MODKEY|ShiftMask|ControlMask, XK_period, tagswapmon,     {.i = -1 } },
+	{ MODKEY,			XK_F5,	        xrdb,	   {.v = NULL } }, // reload xrdb
+	{ MODKEY,			XK_F9,		spawn,		{.v = (const char*[]){ "mounter", NULL } } },
+	{ MODKEY,			XK_F10,		spawn,		{.v = (const char*[]){ "unmounter", NULL } } },
 	
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
@@ -216,7 +219,6 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY,			XK_F5,	   xrdb,	   {.v = NULL } }, // reload xrdb
 //      { MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {1} }, 
 };
