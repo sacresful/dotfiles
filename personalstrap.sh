@@ -88,10 +88,10 @@ done
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
 # Graphic env
-pacman -S xorg xorg-xinit xorg-xrandr
+pacman -S --noconfirm xorg xorg-xinit xorg-xrandr
 
 # Enable arch remote repositories
-pacman -S artix-archlinux-support
+pacman -S --noconfirm artix-archlinux-support
 
 sed -i "/\[lib32]/,/Include'"'s/^#//' /etc/pacman.conf
 
@@ -263,7 +263,7 @@ sudo ufw limit 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw default deny incoming
-sudo default allow outgoing
+sudo ufw default allow outgoing
 sudo ufw enable
 sudo ufw allow CIFS
 #Samba conf
@@ -294,14 +294,20 @@ sudo dinitctl enable tlp
 
 # get config files
 
+cp -R dotfiles/.config .
+cp -R dotfiles/.local .
+
 cd ~/.config/suckless/dwm
 sudo make install
-cd ~/.config/suckless/dmenu
+cd ..
+cd dmenu
 sudo make install
-cd ~/.config/suckless/dwmblocks
+cd ..
+cd dwmblocks
 sudo make install
-cd ~/.config/suckless/st
+cd ..
+cd st
 sudo make install
-
+cd
 # autologin
 sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
