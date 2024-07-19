@@ -178,60 +178,62 @@ mkdirs "${dirs[@]}"
 #fi
 
 apps=(
-	zsh # main shell
-	dash # shell #2
-	git # git
-	man-db # manuals
-	firefox # browser
-	lf # filemanager
-	zip # zip
-	unzip # unzip
-	wget # wget
-	ntfs-3g # mount ntfs drives
-	scrot # screenshoter
-	x264 # codec
-	x265 # codec
-	ffmpeg # ffmpeg
-	mediainfo # properties
-	calcurse # calendar
-	xclip # clipboard
-	redshift # blue light filter
-	unclutter # remove mouse from screen 
-	plocate # search engine for linux
-	cups cups-dinit # printer server
-	mpv # videoplayer
-	zathura # pdf reader
-	zathura-pdf-poppler # pdf reader
-	obs-studio # recording soft
-	wmname # window manager name, fixes java stuff
-	imagemagick # image editor
-	gimp # image editor
-	xwallpaper # set wallpaper
-	xcompmgr # compositor
-	cronie cronie-dinit # cronjob handler
-	python-pywal # pywal, generating color schemes
-	xdg-desktop-portal # allows opening external apps
-	wine # wine ig
-	pass # password manager
-	dunst # notify service
-	nsxiv # image viewer
-	steam # steam/games
-	neofetch # neofetch
-	discord # discord
-	inetutils # ftp
-	ufw ufw-dinit # firewall
-	openssh # ssh
-	rsync # transfering files using ssh
-	yt-dlp # youtube download
-	glow # things for xdg ninja 
-	jq # things for xdg ninja
-	samba # file sharing
-	avahi # samba dependency
-	nfs-utils # something for ntfs drives
-	mpd # music daemon
-	ncmpcpp # music player
-	udev # usb device listening
-	xdg-user-dirs # default folders
+	"zsh" # main shell
+	"dash" # shell #2
+	"man-db" # manuals
+	"firefox" # browser
+	"lf" # filemanager
+	"zip" # zip
+	"unzip" # unzip
+	"wget"	# wget
+	"ntfs-3g"	# mount ntfs drives
+	"scrot" # screenshoter
+	"x264" # codec
+	"x265" # codec
+	"ffmpeg" # ffmpeg
+	"mediainfo" # properties
+	"calcurse"	# calendar
+	"xclip" # clipboard
+	"redshift" # blue light filter
+	"unclutter" # remove mouse from screen 
+	"plocate" # search engine for linux
+	"cups" 
+	"cups-dinit"	# printer server
+	"mpv" # videoplayer
+	"zathura" # pdf reader
+	"zathura-pdf-poppler" # pdf reader
+	"obs-studio"	# recording soft
+	"wmname"	# window manager name, fixes java stuff
+	"imagemagick" # image editor
+	"gimp" # image editor
+	"xwallpaper" # set wallpaper
+	"xcompmgr"	# compositor
+	"cronie"
+	"cronie-dinit" # cronjob handler
+	"python-pywal" # pywal, generating color schemes
+	"xdg-desktop-portal"	# allows opening external apps
+	"wine" # wine ig
+	"pass" # password manager
+	"dunst" # notify service
+	"nsxiv" # image viewer
+	"steam" # steam/games
+	"neofetch" # neofetch
+	"discord"	# discord
+	"inetutils" # ftp
+	"ufw" 
+	"ufw-dinit"	# firewall
+	"openssh" # ssh
+	"rsync" # transfering files using ssh
+	"yt-dlp" # youtube download
+	"glow" # things for xdg ninja 
+	"jq" # things for xdg ninja
+	"samba" # file sharing
+	"avahi" # samba dependency
+	"nfs-utils" # something for ntfs drives
+	"mpd" # music daemon
+	"ncmpcpp" # music player
+	"udev" # usb device listening
+	"xdg-user-dirs" # default folders
 	# laptop stuff
 	#tlp
 	#powertop
