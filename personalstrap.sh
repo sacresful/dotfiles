@@ -1,7 +1,7 @@
 # SYSTEM CONFIGURATION
 
 install () {
-	pacman -S --noconfirm "$@"
+	sudo pacman -S --noconfirm "$@"
 }
 
 sudo dinitctl enable NetworkManager

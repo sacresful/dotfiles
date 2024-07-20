@@ -8,6 +8,12 @@ install () {
 
 # in live cd
 
+while true 
+do
+	read -p "Installation type: normal or encrypted? " INSTALL_TYPE
+	break
+done
+
 # format drives and make partitions
 lsblk
 if [ ! -d "/sys/firmware/efi" ]; then
@@ -15,24 +21,29 @@ if [ ! -d "/sys/firmware/efi" ]; then
 else
 	sfdisk -n 1::+1G --typecode=1:ef00
 
-sfdisk -n 2::+30G --typecode=2:8300
-sfdisk -n 3::+
+sfdisk -n 2::+ --typecode=2:8300
+sfdisk -n 3::+4G
+
+if [ $INSTALL_TYPE = encrypted ]; then
+	cryptsetup luksFormat /dev/$partition2
+	cryptsetup open /dev/$partition2 cryptlvm
+
 # make filesystems
-if [ -d "/sys/firmware/efi" ]; then
-	mkfs.fat -F32 -L BOOT /dev/$partition1
-	fatlabel /dev/$partition1 ESP
+mkfs.fat -F32 /dev/$partition1
+if [ $INSTALL_TYPE = encrypted ]; then
+	mkfs.ext4 /dev/mapper/cryptlvm
 else
-mkfs.ext4 -L ROOT /dev/$partition2
-mkfs.ext4 -L HOME /dev/$partition3
-mkswap -L SWAP /dev/$partition4
+	mkfs.ext4 /dev/$partition2
+fi
+mkswap /dev/$partition3
 
 # mounting drives
-swapon /dev/disk/by-label/SWAP
-mount /dev/disk/by-label/ROOT /mnt
-
-# if home on separate partition
-mkdir /mnt/home
-mount /dev/disk-by-label/HOME /mnt/home
+swapon /dev/$partition3
+if [ $INSTALL_TYPE = encrypted ]; then
+	mount /dev/mapper/cryptlvm /mnt
+else
+	mount /dev/$partition2 /mnt
+fi
 
 # mounting boot 
 if [ -d "/sys/firmware/efi" ]; then
@@ -42,7 +53,11 @@ if [ -d "/sys/firmware/efi" ]; then
 	mount /dev/disk/by-label/ESP /mnt/boot/efi
 else
 	mkdir /mnt/boot 				
-	mount /dev/disk/by-label/BOOT /mnt/boot 
+	mount /dev/$partition1 /mnt/boot 
+	
+sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+
+#/etc/pacman.d/mirrorlist 
 
 # install system
 system=(
@@ -53,8 +68,12 @@ system=(
 	networkmanager networkmanager-dinit # access to network
 	neovim vim # editors
 	git
+)
+install "{system[@]}"
+
 if [ -d "/sys/firmware/efi" ]; then
-	efibootmgr # for efi systems
+	basestrap /mnt efibootmgr # for efi systems
+	
 # todo: encrypted installation
 	#cryptsetup lvm2 lvm2-dinit
 
