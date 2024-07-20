@@ -91,7 +91,7 @@ Include = /etc/pacman.d/mirrorlist-arch
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
 # Graphic env
-pacman -S --noconfirm xorg xorg-xinit xorg-xrandr
+pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 # audio 
 audio_programs=(
@@ -225,20 +225,8 @@ install "${apps[@]}"
 
 xdg-user-dirs-update
 
-# install virtualization
-while true
-do
-	read -p "Do you want to install virtualization software? Y/N " RESPONSE
-	case "$RESPONSE" in
-		[Yy])
-			pacman -S qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
-			usermod -aG libvirt
-		[Nn])
-			return 1
-		*)	
-			continue
-	esac
-done
+pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
+usermod -aG libvirt
 
 #setup firewall default conf
 ufw limit 22/tcp
@@ -262,9 +250,7 @@ dinitctl enable ufw
 dinitctl enable cupsd
 dinitctl enable cronie
 dinitctl enable sshd
-dinitctl enable libvirtd
-
-
+#dinitctl enable libvirtd
 dinitctl enable tlp
 
 #cd repos
@@ -284,8 +270,8 @@ chsh -s /bin/zsh sacresful
 
 # get config files
 
-cp -R dotfiles/.config .
-cp -R dotfiles/.local .
+cp -R dotfiles/.config /home/$USERNAME/
+cp -R dotfiles/.local /home/$USERNAME/
 
 cd ~/.config/suckless/dwm
 make install
@@ -299,3 +285,8 @@ cd ..
 cd st
 make install
 cd
+
+rm /home/$USERNAME/.bash_logoout
+rm /home/$USERNAME/.bash_profile
+rm /home/$USERNAME/.bashrc																																																		
+	
