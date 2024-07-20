@@ -6,118 +6,30 @@ install () {
 
 sudo dinitctl enable NetworkManager
 
-while true
-do
-	read -p "Desktop/Laptop? " DEVICE_TYPE
-		case "${DEVICE_TYPE}" in
-			D*)	
-				DEVICE_TYPE="DESKTOP"
-				break
-			L*)
-				DEVICE_TYPE="LAPTOP"
-				break
-			*)	
-				
-
-# create user
-while true
-do
-	read -p "Enter username: " USERNAME
-	
-	if [ -z "$USERNAME" ]; then
-		echo "Username cannot be empty"
-	else
-		useradd -mG wheel "$USERNAME"
-		echo "User '$USERNAME' has been created"
-		break
-	fi
-done
-
-# set hostname
-while true
-do
-	read -p "Enter hostname: " HOSTNAME
-	if [ -z "$HOSTNAME" ]; then
-		echo "Enter valid hostname"
-	else
-		echo $HOSTNAME >> /etc/hostname
-		break
-	fi
-done
-
-# set default ips
-echo "127.0.0.1        localhost" >> /etc/hosts
-echo "::1              localhost" >> /etc/hosts
-echo "127.0.1.1        $HOSTNAME.localdomain  $HOSTNAME" >> /etc/hosts
-
-# set timezone
-while true
-do
-	read -p "Enter your region:" TIMEZONE
-	if [ -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
-		ln -sf /usr/share/zoneinfo/"$TIMEZONE" /etc/localtime
-		break
-	elif [ -d /usr/share/zone/"$TIMEZONE" ]; then
-		read -p "Enter your city:" CITY
-		ln -sf "/usr/share/zoneinfo/$TIMEZONE/$CITY" /etc/localtime
-		break
-	fi
-done
-
-# generate locale
-sed -i 's/^#pl_PL.UTF-8 UTF-8/pl_PL.UTF-8 UTF-8/' /etc/locale.gen
-sed -i 's/^#pl_PL ISO-8859-2/pl_PL ISO-8859-2/' /etc/locale.gen
-sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-sed -i 's/^#en_US ISO-8859-1/en_US ISO-8859-1/' /etc/locale.gen
-locale-gen
-
-#parallel downloading
-sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
-
-# Enable arch remote repositories
-pacman -Sy --noconfirm artix-archlinux-support
-
-sed -i "/\[lib32]/,/Include'"'s/^#//' /etc/pacman.conf
-
-sudo echo "
-# Arch
-[extra]
-Include = /etc/pacman.d/mirrorlist-arch
-
-[community]
-Include = /etc/pacman.d/mirrorlist-arch
-
-[multilib]
-Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
-
 # Graphic env
 pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 # audio 
 audio_programs=(
-"pipewire"
-"pipewire-audio"
-"pipewire-alsa"
-"pipewire-pulse"
-"pipewire-jack"
-"wireplumber"
-"pulsemixer"
+	"pipewire"
+	"pipewire-audio"
+	"pipewire-alsa"
+	"pipewire-pulse"
+	"pipewire-jack"
+	"wireplumber"
+	"pulsemixer"
 )
 
 install "${audio_programs[@]}"
 
 # some fonts
 fonts=(
-noto-fonts
-noto-fonts-cjk
-noto-fonts-emoji
+	"noto-fonts"
+	"noto-fonts-cjk"
+	"noto-fonts-emoji"
 )
 
 install "${fonts[@]}"
-
-# sudo no password rights
-sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
 # autologin
 sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
@@ -142,21 +54,18 @@ dirs=(
 )
 mkdirs "${dirs[@]}"
 
-# install gpu drivers
-#gpu_type=$(lspci)
-#if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
-#    pacman -S --noconfirm --needed nvidia
-#	nvidia-xconfig
-
-#elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
- #   pacman -S --noconfirm --needed xf86-video-amdgpu
-
-#elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
- #   pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
-
-#elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
- #   pacman -S --needed --noconfirm libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
-#fi
+# GPU drivers
+gpu_type=$(lspci)
+if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+    pacman -S --noconfirm --needed nvidia
+	nvidia-xconfig
+elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
+    pacman -S --noconfirm --needed xf86-video-amdgpu
+elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+    pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+    pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+fi
 
 apps=(
 	"zsh" # main shell
@@ -230,7 +139,7 @@ xdg-user-dirs-update
 pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
 usermod -aG libvirt
 
-#setup firewall default conf
+# FIREWALL SETUP
 ufw limit 22/tcp
 ufw allow 80/tcp
 ufw allow 443/tcp
@@ -252,13 +161,14 @@ dinitctl enable ufw
 dinitctl enable cupsd
 dinitctl enable cronie
 dinitctl enable sshd
-#dinitctl enable libvirtd
+dinitctl enable libvirtd
 dinitctl enable tlp
 
-#cd repos
-#git clone https://aur.archlinux.org/yay.git
-#cd yay
-#makepkg -si
+# Install AUR Helper
+cd repos
+git clone https://aur.archlinux.org/paru.git
+cd paru
+makepkg -si
 
 #yay ookla-speedtest-bin # speedtest
 #yay ueberzugpp # ueberzug
@@ -272,10 +182,10 @@ chsh -s /bin/zsh sacresful
 
 # get config files
 
-cp -R /root/dotfiles/.config /home/$USERNAME/
-cp -R /root/dotfiles/.local /home/$USERNAME/
+sudo cp -R /root/dotfiles/.config /home/$USERNAME/
+sudo cp -R /root/dotfiles/.local /home/$USERNAME/
 
-cd ~/.config/suckless/dwm
+cd /home/$USERNAME/.config/suckless/dwm
 make install
 cd ..
 cd dmenu
