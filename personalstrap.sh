@@ -1,4 +1,3 @@
-
 # SYSTEM CONFIGURATION
 
 install () {
@@ -7,12 +6,25 @@ install () {
 
 sudo dinitctl enable NetworkManager
 
+while true
+do
+	read -p "Desktop/Laptop? " DEVICE_TYPE
+		case "${DEVICE_TYPE}" in
+			D*)	
+				DEVICE_TYPE="DESKTOP"
+				break
+			L*)
+				DEVICE_TYPE="LAPTOP"
+				break
+			*)	
+				
+
 # create user
 while true
 do
-	read -p "Enter username:" USERNAME
+	read -p "Enter username: " USERNAME
 	
-	if [ -z "$USERNAME"]; then
+	if [ -z "$USERNAME" ]; then
 		echo "Username cannot be empty"
 	else
 		useradd -mG wheel "$USERNAME"
@@ -21,28 +33,10 @@ do
 	fi
 done
 
-# set password for user
-while true
-do
-	read -p -s "Enter password:" PASSWORD1
-	
-	if [ -z "$PASSWORD1" ]; then
-		echo "Password cannot be empty"
-	else
-		read -p -s "Re-enter password:" PASSWORD2	 
-			if [[ "$PASSWORD1" == "$PASSWORD2" ]]; then
-       		 		set_option "$1" "$PASSWORD1"
-    			else
-        			echo -ne "ERROR! Passwords do not match. \n"
-        			set_password
-    			fi
-done
-
 # set hostname
 while true
 do
-	read -p "Enter hostname:" HOSTNAME
-
+	read -p "Enter hostname: " HOSTNAME
 	if [ -z "$HOSTNAME" ]; then
 		echo "Enter valid hostname"
 	else
@@ -60,38 +54,28 @@ echo "127.0.1.1        $HOSTNAME.localdomain  $HOSTNAME" >> /etc/hosts
 while true
 do
 	read -p "Enter your region:" TIMEZONE
-	if [ -f TIMEZONE ]; then
+	if [ -f "/usr/share/zoneinfo/$TIMEZONE" ]; then
 		ln -sf /usr/share/zoneinfo/"$TIMEZONE" /etc/localtime
 		break
-	elif [ -d TIMEZONE ]; then
+	elif [ -d /usr/share/zone/"$TIMEZONE" ]; then
 		read -p "Enter your city:" CITY
-		ln -sf /usr/share/zoneinfo/"$TIMEZONE"/"$CITY" /etc/localtime
+		ln -sf "/usr/share/zoneinfo/$TIMEZONE/$CITY" /etc/localtime
 		break
 	fi
 done
 
 # generate locale
-while true
-do
-	read -p "Which locale: pl or en" LOCALE
-		if LOCALE = pl
-			sed -i 's/^#pl_PL.UTF-8 UTF-8/pl_PL.UTF-8 UTF-8/' /etc/locale.gen
-			sed -i 's/^#pl_PL ISO-8859-2/pl_PL ISO-8859-2/' /etc/locale.gen
-		elif LOCALE = en
-			sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-			sed -i 's/^#en_US ISO-8859-1/en_US ISO-8859-1/' /etc/locale.gen
-		fi
-	locale-gen
-done
+sed -i 's/^#pl_PL.UTF-8 UTF-8/pl_PL.UTF-8 UTF-8/' /etc/locale.gen
+sed -i 's/^#pl_PL ISO-8859-2/pl_PL ISO-8859-2/' /etc/locale.gen
+sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+sed -i 's/^#en_US ISO-8859-1/en_US ISO-8859-1/' /etc/locale.gen
+locale-gen
 
 #parallel downloading
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-# Graphic env
-pacman -S --noconfirm xorg xorg-xinit xorg-xrandr
-
 # Enable arch remote repositories
-pacman -S --noconfirm artix-archlinux-support
+pacman -Sy --noconfirm artix-archlinux-support
 
 sed -i "/\[lib32]/,/Include'"'s/^#//' /etc/pacman.conf
 
@@ -105,6 +89,9 @@ Include = /etc/pacman.d/mirrorlist-arch
 
 [multilib]
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
+
+# Graphic env
+pacman -S --noconfirm xorg xorg-xinit xorg-xrandr
 
 # audio 
 audio_programs=(
@@ -132,6 +119,9 @@ install "${fonts[@]}"
 sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
+# autologin
+sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
+
 ######################################### PERSONAL #####################################
 
 
@@ -151,15 +141,6 @@ dirs=(
 	"docs/public"
 )
 mkdirs "${dirs[@]}"
-
-# check this later
-#if [[ ${FS} == "luks" ]]; then
-# Making sure to edit mkinitcpio conf if luks is selected
-# add encrypt in mkinitcpio.conf before filesystems in hooks
-#    sed -i 's/filesystems/encrypt filesystems/g' /etc/mkinitcpio.conf
-# making mkinitcpio with linux kernel
-#    mkinitcpio -p linux
-#fi
 
 # install gpu drivers
 #gpu_type=$(lspci)
@@ -234,10 +215,9 @@ apps=(
 	"ncmpcpp" # music player
 	"udev" # usb device listening
 	"xdg-user-dirs" # default folders
-	# laptop stuff
-	#tlp
-	#powertop
-	#ethtool
+	"tlp"
+	"powertop"
+	"ethtool"
 	# net tools maybe
 )
 
@@ -246,9 +226,46 @@ install "${apps[@]}"
 xdg-user-dirs-update
 
 # install virtualization
-#sudo pacman -S
-#qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
-#sudo usermod -aG libvirt
+while true
+do
+	read -p "Do you want to install virtualization software? Y/N " RESPONSE
+	case "$RESPONSE" in
+		[Yy])
+			pacman -S qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
+			usermod -aG libvirt
+		[Nn])
+			return 1
+		*)	
+			continue
+	esac
+done
+
+#setup firewall default conf
+ufw limit 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw default deny incoming
+ufw default allow outgoing
+ufw enable
+ufw allow CIFS
+ufw app update Samba
+echo "[Samba]
+title=LanManager-like file and printer server for Unix
+description=The Samba software suite is a collection of programs that implements the SMB/CIFS protocol for unix systems, allowing you to serve files and printers to Windows, NT, OS/2 and DOS clients. This protocol is sometimes also referred to as the LanManager or NetBIOS protocol.
+ports=137,138/udp|139,445/tcp" >> /etc/ufw/applications.d/samba
+ufw allow Samba
+ufw allow 4000/tcp
+ufw allow 6112/tcp
+
+# Enable Services
+dinitctl enable ufw
+dinitctl enable cupsd
+dinitctl enable cronie
+dinitctl enable sshd
+dinitctl enable libvirtd
+
+
+dinitctl enable tlp
 
 #cd repos
 #git clone https://aur.archlinux.org/yay.git
@@ -258,24 +275,6 @@ xdg-user-dirs-update
 #yay ookla-speedtest-bin # speedtest
 #yay ueberzugpp # ueberzug
 
-#setup firewall default conf
-sudo ufw limit 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw enable
-sudo ufw allow CIFS
-#Samba conf
-sudo ufw app update Samba
-sudo echo "[Samba]
-title=LanManager-like file and printer server for Unix
-description=The Samba software suite is a collection of programs that implements the SMB/CIFS protocol for unix systems, allowing you to serve files and printers to Windows, NT, OS/2 and DOS clients. This protocol is sometimes also referred to as the LanManager or NetBIOS protocol.
-ports=137,138/udp|139,445/tcp" >> /etc/ufw/applications.d/samba
-sudo allow Samba
-sudo ufw allow 4000/tcp
-sudo ufw allow 6112/tcp
-
 # make dash the default shell for shell scripts
 ln -sf /usr/bin/dash /bin/sh
 
@@ -283,31 +282,20 @@ ln -sf /usr/bin/dash /bin/sh
 sudo echo "export ZDOTDIR="$HOME"/.config/zsh" >> /etc/zsh/zshenv
 chsh -s /bin/zsh sacresful
 
-# Enable Services
-sudo dinitctl enable ufw
-sudo dinitctl enable cupsd
-sudo dinitctl enable cronie
-sudo dinitctl enable sshd
-sudo dinitctl enable libvirtd
-# if laptop setting
-sudo dinitctl enable tlp
-
 # get config files
 
 cp -R dotfiles/.config .
 cp -R dotfiles/.local .
 
 cd ~/.config/suckless/dwm
-sudo make install
+make install
 cd ..
 cd dmenu
-sudo make install
+make install
 cd ..
 cd dwmblocks
-sudo make install
+make install
 cd ..
 cd st
-sudo make install
+make install
 cd
-# autologin
-sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
