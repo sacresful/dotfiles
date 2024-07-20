@@ -203,7 +203,8 @@ apps=(
 	"inetutils" # ftp
 	"ufw" 
 	"ufw-dinit"	# firewall
-	"openssh" # ssh
+	"openssh"
+	"openssh-dinit" # ssh
 	"rsync" # transfering files using ssh
 	"yt-dlp" # youtube download
 	"glow" # things for xdg ninja 
@@ -216,6 +217,7 @@ apps=(
 	"udev" # usb device listening
 	"xdg-user-dirs" # default folders
 	"tlp"
+	"tlp-dinit"
 	"powertop"
 	"ethtool"
 	# net tools maybe
@@ -270,8 +272,8 @@ chsh -s /bin/zsh sacresful
 
 # get config files
 
-cp -R dotfiles/.config /home/$USERNAME/
-cp -R dotfiles/.local /home/$USERNAME/
+cp -R /root/dotfiles/.config /home/$USERNAME/
+cp -R /root/dotfiles/.local /home/$USERNAME/
 
 cd ~/.config/suckless/dwm
 make install
@@ -286,7 +288,7 @@ cd st
 make install
 cd
 
-rm /home/$USERNAME/.bash_logoout
+rm /home/$USERNAME/.bash_logout
 rm /home/$USERNAME/.bash_profile
 rm /home/$USERNAME/.bashrc																																																		
 	
