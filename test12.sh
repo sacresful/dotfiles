@@ -11,11 +11,11 @@ pacman -S gptfdisk
 while true 
 do
 	read -p "Encrypted installation? Y/N " TYPE
-	if [ $TYPE =~ ^[Yy][Ee][Ss]$ ]; then
-		ENCRYPTED = true
+	if [ $TYPE = ^[Yy][Ee][Ss]$ | ^[Yy] ]; then
+		ENCRYPTED=true
 		break
-	elif [ $TYPE =~ ^[Nn][Oo]$ ]; then
-		ENCRYPTED = false
+	elif [ $TYPE = ^[Nn][Oo]$ | ^[Nn] ]; then
+		ENCRYPTED=false
 		break
 	else
 		echo "Please enter yes or no. "
@@ -39,6 +39,7 @@ do
 			sgdisk -n 2::+1G --typecode=2:ef00 /dev/$DRIVE
 		fi
 		sgdisk -n 3::-0 --typecode=3:8300 /dev/$DRIVE
+		break
 	else
 		echo "Invalid drive."
 	fi
@@ -47,11 +48,11 @@ done
 # make filesystems
 mkswap /dev/${DRIVE}1
 mkfs.fat -F32 /dev/${DRIVE}2
-if [ $ENCRYPTED =~ true ]; then
+if [ $ENCRYPTED = true ]; then
 	cryptsetup luksFormat /dev/${DRIVE}3
 	cryptsetup open /dev/${DRIVE}3 cryptlvm
 fi
-if [ $ENCRYPTED =~ true ]; then
+if [ $ENCRYPTED = true ]; then
 	mkfs.ext4 /dev/mapper/cryptlvm
 else
 	mkfs.ext4 /dev/${DRIVE}3
@@ -60,7 +61,7 @@ fi
 
 # mounting drives
 swapon /dev/${DRIVE}1
-if [ $ENCRYPTED =~ true ]; then
+if [ $ENCRYPTED = true ]; then
 	mount /dev/mapper/cryptlvm /mnt
 else
 	mount /dev/${DRIVE}3 /mnt
