@@ -26,13 +26,11 @@ do
 	esac
 done
 
-
-
 # Format drives, create partitions.
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
 while true 
 do
-	read -p "Choose a drive to install linux on." DRIVE
+	read -p "Choose a drive to install linux on. \n" DRIVE
 	if [ -b "/dev/$DRIVE" ]; then
 		sgdisk -Z /dev/$DRIVE
 		sgdisk -a 2048 -o /dev/$DRIVE
@@ -100,7 +98,7 @@ if [ -d "/sys/firmware/efi" ]; then
 	basestrap /mnt efibootmgr # for efi systems
 fi
 
-if [ $INSTALL_TYPE == encrypted ]; then
+if [ $ENCRYPTED = true ]; then
 	basestrap /mnt cryptsetup lvm2 lvm2-dinit
 fi
 
@@ -115,7 +113,7 @@ artix-chroot /mnt bash
 while true
 do
 	read -p -s "Enter root password: " ROOTPASS
-	if [ -z "$USERNAME"]; then
+	if [ -z "$"]; then
 		echo "Username cannot be empty"
 	else
 		passwd "$ROOTPASS"
