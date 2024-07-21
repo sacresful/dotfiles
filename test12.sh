@@ -6,20 +6,24 @@ install () {
 	basestrap /mnt "$@"
 }
 
-pacman -S gptfdisk
+pacman -S --noconfirm gptfdisk
 
 while true 
 do
 	read -p "Encrypted installation? Y/N " TYPE
-	if [ $TYPE = ^[Yy][Ee][Ss]$ | ^[Yy] ]; then
-		ENCRYPTED=true
-		break
-	elif [ $TYPE = ^[Nn][Oo]$ | ^[Nn] ]; then
-		ENCRYPTED=false
-		break
-	else
-		echo "Please enter yes or no. "
-	fi
+	case $TYPE in 
+		[Yy][Ee][Ss]$ | [Yy])
+			ENCRYPTED=true
+			break
+			;;
+		[Nn][Oo]$ | [Nn])
+			ENCRYPTED=false
+			break
+			;;
+		*)
+			echo "Please enter yes or no. "
+			;;
+	esac
 done
 
 
