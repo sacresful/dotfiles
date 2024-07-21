@@ -35,15 +35,15 @@ while true
 do
 	read -p "Choose a drive to install linux on. " DRIVE
 	if [ -b "/dev/$DRIVE" ]; then
-		sgdisk -Z /dev/$DRIVE
-		sgdisk -a 2048 -o /dev/$DRIVE
-		sgdisk -n 1::+4G --typecode=1:8200 /dev/$DRIVE
+		sgdisk -Z /dev/"$DRIVE"
+		sgdisk -a 2048 -o /dev/"$DRIVE"
+		sgdisk -n 1::+4G --typecode=1:8200 /dev/"$DRIVE"
 		if [ ! -d "/sys/firmware/efi" ]; then
-			sgdisk -n 2::+1G --typecode=2:ef02 /dev/$DRIVE
+			sgdisk -n 2::+1G --typecode=2:ef02 /dev/"$DRIVE"
 		else
-			sgdisk -n 2::+1G --typecode=2:ef00 /dev/$DRIVE
+			sgdisk -n 2::+1G --typecode=2:ef00 /dev/"$DRIVE"
 		fi
-		sgdisk -n 3::-0 --typecode=3:8300 /dev/$DRIVE
+		sgdisk -n 3::-0 --typecode=3:8300 /dev/"$DRIVE"
 		break
 	else
 		echo "Invalid drive."
@@ -54,7 +54,7 @@ partprobe ${DRIVE}
 # make filesystems
 mkswap /dev/${DRIVE}1
 mkfs.fat -F32 /dev/${DRIVE}2
-if [ $ENCRYPTED = true ]; then
+if [ "$ENCRYPTED" = true ]; then
 	cryptsetup luksFormat /dev/${DRIVE}3
 	cryptsetup open /dev/${DRIVE}3 cryptlvm
 fi
@@ -63,26 +63,30 @@ while true
 do
 
 read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM 
-	case $filesystem
+	case $filesystem in
 		ext4)
-			if [ $ENCRYPTED = true ]; then
+			if [ "$ENCRYPTED" = true ]; then
 			mkfs.ext4 /dev/mapper/cryptlvm
 			else
 			mkfs.ext4 /dev/${DRIVE}3
 			fi
+			break
+			;;
 		btrfs)
-			if [ $ENCRYPTED = true ]; then
+			if [ "$ENCRYPTED" = true ]; then
 			mkfs.btrfs /dev/mapper/cryptlvm
 			else
 			mkfs.btrfs /dev/${DRIVE}3
 			fi
+			break
+			;;
 	esac
 done
 
 
 # mounting drives
 swapon /dev/${DRIVE}1
-if [ $ENCRYPTED = true ]; then
+if [ "$ENCRYPTED" = true ]; then
 	mount /dev/mapper/cryptlvm /mnt
 else
 	mount /dev/${DRIVE}3 /mnt
@@ -100,7 +104,7 @@ fi
 
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-
+#MIRRORS
 while true
 do
 	read -p "Enter your location (e.g., Country/City): " LOCATION
@@ -173,7 +177,7 @@ if [ -d "/sys/firmware/efi" ]; then
 	basestrap /mnt efibootmgr # for efi systems
 fi
 
-if [ $ENCRYPTED = true ]; then
+if [ "$ENCRYPTED" = true ]; then
 	basestrap /mnt cryptsetup lvm2 lvm2-dinit
 fi
 
@@ -188,10 +192,10 @@ artix-chroot /mnt bash
 while true
 do
 	read -p -s "Enter root password: " ROOTPASS
-	if [ -z $ROOTPASS ]; then
-		echo "Username cannot be empty"
+	if [ -z "$ROOTPASS" ]; then
+		echo "Password cannot be empty"
 	else
-		passwd $ROOTPASS
+		passwd "$ROOTPASS"
 	fi
 done
 
@@ -242,7 +246,7 @@ do
 	if [ -z "$HOSTNAME" ]; then
 		echo "Enter valid hostname."
 	else
-		echo $HOSTNAME >> /etc/hostname
+		echo "$HOSTNAME" >> /etc/hostname
 		break
 	fi
 done
@@ -250,21 +254,21 @@ done
 # set default ips
 echo "127.0.0.1        localhost" >> /etc/hosts
 echo "::1              localhost" >> /etc/hosts
-echo "127.0.1.1        $HOSTNAME.localdomain  $HOSTNAME" >> /etc/hosts
+echo "127.0.1.1        "$HOSTNAME".localdomain  "$HOSTNAME"" >> /etc/hosts
 
 # set timezone
 while true
 do
 	read -p "Enter your region: " REGION
-	if [ -f "/usr/share/zoneinfo/$REGION" ]; then
-		ln -sf "/usr/share/zoneinfo/$REGION" /etc/localtime
-		echo "Timezone set to $REGION."
+	if [ -f "/usr/share/zoneinfo/"$REGION"" ]; then
+		ln -sf "/usr/share/zoneinfo/"$REGION"" /etc/localtime
+		echo "Timezone set to "$REGION"."
 		break
-	elif [ -d "/usr/share/zoneinfo/$REGION" ]; then
+	elif [ -d "/usr/share/zoneinfo/"$REGION"" ]; then
 		read -p "Enter your city:" CITY
-		if [ -f "/usr/share/zoneinfo/$REGION/$CITY" ]; then
-			ln -sf "/usr/share/zoneinfo/$REGION/$CITY" /etc/localtime
-			echo "Timezone set to $REGION/$CITY"
+		if [ -f "/usr/share/zoneinfo/"$REGION"/"$CITY"" ]; then
+			ln -sf "/usr/share/zoneinfo/"$REGION"/"$CITY"" /etc/localtime
+			echo "Timezone set to "$REGION"/"$CITY""
 			break
 		else
 			echo "Invalid city."
@@ -300,7 +304,7 @@ Include = /etc/pacman.d/mirrorlist-arch
 [multilib]
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
-if [ $ENCRYPTED = true ]; then
+if [ "$ENCRYPTED" = true ]; then
 	sed -i '/^HOOKS=/ {s/"\(.*\)"/"\1 crypt lvm2"/}' "/etc/mkinitcpio.conf"
 	mkinitcpio -p linux
 fi
@@ -309,7 +313,7 @@ $ENCRYPTEDUUID=blkid | grep '^/dev/${DRIVE}3' | sed -n 's/.*UUID="\([^"]*\)".*/\
 $DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
 
 
-sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID \2|"" "/etc/default/grub"
+sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
 #/etc/default/grub
 #GRUB_CMDLINE_LINUX_DEFAULT:
 ##cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm 
@@ -318,15 +322,15 @@ sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEF
 
 # installing bootloader
 if [ ! -d "/sys/firmware/efi" ]; then
-	grub-install --recheck /dev/$DRIVE
+	grub-install --recheck /dev/"$DRIVE"
 else
 	pacman -S os-prober efibootmgr
-	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/$DRIVE
+	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/"$DRIVE"
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
 
 exit
-cp $LOGFILE /home/$USERNAME/
+cp "$LOGFILE" /home/"$USERNAME"/
 reboot
