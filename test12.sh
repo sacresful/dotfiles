@@ -2,11 +2,14 @@
 
 # install bare minimum
 
+LOGFILE=/home/artix/bootstrap.log
+exec > >(tee -a "$LOGFILE") 2>&1
+
 install () {
 	basestrap /mnt "$@"
 }
 
-pacman -S --noconfirm gptfdisk
+pacman -S --noconfirm gptfdisk parted	
 
 while true 
 do
@@ -30,7 +33,7 @@ done
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
 while true 
 do
-	read -p "Choose a drive to install linux on. \n" DRIVE
+	read -p "Choose a drive to install linux on. " DRIVE
 	if [ -b "/dev/$DRIVE" ]; then
 		sgdisk -Z /dev/$DRIVE
 		sgdisk -a 2048 -o /dev/$DRIVE
@@ -46,6 +49,7 @@ do
 		echo "Invalid drive."
 	fi
 done
+partprobe ${DRIVE}
 
 # make filesystems
 mkswap /dev/${DRIVE}1
@@ -54,11 +58,26 @@ if [ $ENCRYPTED = true ]; then
 	cryptsetup luksFormat /dev/${DRIVE}3
 	cryptsetup open /dev/${DRIVE}3 cryptlvm
 fi
-if [ $ENCRYPTED = true ]; then
-	mkfs.ext4 /dev/mapper/cryptlvm
-else
-	mkfs.ext4 /dev/${DRIVE}3
-fi
+
+while true
+do
+
+read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM 
+	case $filesystem
+		ext4)
+			if [ $ENCRYPTED = true ]; then
+			mkfs.ext4 /dev/mapper/cryptlvm
+			else
+			mkfs.ext4 /dev/${DRIVE}3
+			fi
+		btrfs)
+			if [ $ENCRYPTED = true ]; then
+			mkfs.btrfs /dev/mapper/cryptlvm
+			else
+			mkfs.btrfs /dev/${DRIVE}3
+			fi
+	esac
+done
 
 
 # mounting drives
@@ -78,7 +97,63 @@ else
 	mkdir /mnt/boot 				
 	mount /dev/${DRIVE}2 /mnt/boot 
 fi
+
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+
+
+while true
+do
+	read -p "Enter your location (e.g., Country/City): " LOCATION
+	
+	if [ -z "$LOCATION" ]; then
+        echo "No location provided. Please try again."
+        continue
+    fi
+
+    START_LINE=$(grep -n "^# ${LOCATION}" "$MIRRORLIST" | head -n 1 | cut -d: -f1)
+
+    if [ -z "$START_LINE" ]; then
+        echo "Location not found. Please try again."
+        continue
+    fi
+
+    END_LINE=$(awk "NR > $START_LINE" "$MIRRORLIST" | grep -n "^#" | head -n 1 | cut -d: -f1)
+    if [ -z "$END_LINE" ]; then
+        END_LINE=$(wc -l < "$MIRRORLIST")
+    else
+        END_LINE=$((START_LINE + END_LINE - 1))
+    fi
+
+    EXTRACTED_SECTION=$(sed -n "${START_LINE},${END_LINE}p" "$MIRRORLIST")
+
+    # Remove existing mirrors below the `# Default mirrors` section
+    awk "/^# Default mirrors/{flag=1; next}/^#/{flag=0}flag" "$MIRRORLIST" > "$MIRRORLIST.tmp"
+    mv "$MIRRORLIST.tmp" "$MIRRORLIST"
+
+    # Insert the extracted section above the `# Default mirrors` section
+    sed -i "/^# Default mirrors/i $EXTRACTED_SECTION" "$MIRRORLIST"
+
+    echo "Mirrorlist updated successfully."
+    break
+	
+#	START_LINE=$(grep -n "^# ${location}" "$MIRRORLIST" | head -n 1 | cut -d: -f1)
+#    if [ -z "$START_LINE" ]; then
+#        return 1
+#    fi
+#	
+#	END_LINE=$(awk "NR > $START_LINE" "$MIRRORLIST" | grep -n "^#" | head -n 1 | cut -d: -f1)
+ #   if [ -z "$END_LINE" ]; then
+#        END_LINE=$(wc -l < "$MIRRORLIST")
+#    else
+#        END_LINE=$((START_LINE + END_LINE - 1))
+ #   fi
+#	
+#	EXTRACTED_SECTION=$(sed -n "${START_LINE},${END_LINE}p" "$MIRRORLIST")
+#    awk "/^# Default mirrors/{flag=1; next}/^#/{flag=0}flag" "$MIRRORLIST" > "$MIRRORLIST.tmp"
+ #   mv "$MIRRORLIST.tmp" "$MIRRORLIST"
+ #   sed -i "/^# Default mirrors/i $EXTRACTED_SECTION" "$MIRRORLIST"
+	
+done
 
 #/etc/pacman.d/mirrorlist 
 
@@ -92,7 +167,7 @@ system=(
 	neovim vim # editors
 	git
 )
-install "{system[@]}"
+install "${system[@]}"
 
 if [ -d "/sys/firmware/efi" ]; then
 	basestrap /mnt efibootmgr # for efi systems
@@ -113,10 +188,10 @@ artix-chroot /mnt bash
 while true
 do
 	read -p -s "Enter root password: " ROOTPASS
-	if [ -z "$"]; then
+	if [ -z $ROOTPASS ]; then
 		echo "Username cannot be empty"
 	else
-		passwd "$ROOTPASS"
+		passwd $ROOTPASS
 	fi
 done
 
@@ -225,15 +300,33 @@ Include = /etc/pacman.d/mirrorlist-arch
 [multilib]
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
+if [ $ENCRYPTED = true ]; then
+	sed -i '/^HOOKS=/ {s/"\(.*\)"/"\1 crypt lvm2"/}' "/etc/mkinitcpio.conf"
+	mkinitcpio -p linux
+fi
+
+$ENCRYPTEDUUID=blkid | grep '^/dev/${DRIVE}3' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
+$DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
+
+
+sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID \2|"" "/etc/default/grub"
+#/etc/default/grub
+#GRUB_CMDLINE_LINUX_DEFAULT:
+##cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm 
+#root=UUID=$DECRYPTEDUUID
+
+
 # installing bootloader
 if [ ! -d "/sys/firmware/efi" ]; then
-	grub-install --recheck $drive
+	grub-install --recheck /dev/$DRIVE
 else
 	pacman -S os-prober efibootmgr
-	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/disk/by-label/boot
+	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/$DRIVE
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
+
 exit
+cp $LOGFILE /home/$USERNAME/
 reboot
