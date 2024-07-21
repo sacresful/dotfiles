@@ -63,20 +63,20 @@ while true
 do
 
 read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM 
-	case $filesystem in
+	case $FILESYSTEM in
 		ext4)
 			if [ "$ENCRYPTED" = true ]; then
-			mkfs.ext4 /dev/mapper/cryptlvm
+				mkfs.ext4 /dev/mapper/cryptlvm
 			else
-			mkfs.ext4 /dev/${DRIVE}3
+				mkfs.ext4 /dev/${DRIVE}3
 			fi
 			break
 			;;
 		btrfs)
 			if [ "$ENCRYPTED" = true ]; then
-			mkfs.btrfs /dev/mapper/cryptlvm
+				mkfs.btrfs /dev/mapper/cryptlvm
 			else
-			mkfs.btrfs /dev/${DRIVE}3
+				mkfs.btrfs /dev/${DRIVE}3
 			fi
 			break
 			;;
