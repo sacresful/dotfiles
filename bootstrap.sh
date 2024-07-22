@@ -52,7 +52,7 @@ while true
 do
 	read -rp "Choose a drive to install linux on. " DRIVE
 		read -rp "Which partition scheme, gpt or mbr? " GPTORMBR
-		if [ GPTORMBR = MBR]; then
+		if [ GPTORMBR = MBR ]; then
 			if [ -b "/dev/$DRIVE" ]; then
 				echo "o
 				w
@@ -312,18 +312,6 @@ do
 done
 
 #-------------------------------------------------------------------------
-#			      Choose where grub should be installed
-#-------------------------------------------------------------------------
-
-
-#lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
-#while true 
-#do
-#	read -rp "Choose a drive to install grub on. " DRIVE
-#    break
-#done
-
-#-------------------------------------------------------------------------
 #			      Chrooting into newly installed system
 #-------------------------------------------------------------------------
 
@@ -371,7 +359,6 @@ sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 #-------------------------------------------------------------------------
 
 pacman -Sy --noconfirm pacman-contrib
-echo "Generating mirror list"
 rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
