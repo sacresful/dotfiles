@@ -55,12 +55,12 @@ do
 		sgdisk -Z /dev/"$DRIVE"
 		sgdisk -a 2048 -o /dev/"$DRIVE"
 		if [ ! -d "/sys/firmware/efi" ]; then
-			sgdisk -n 1::+1G --typecode=2:ef02 /dev/"$DRIVE"
+			sgdisk -n 1::+1G --typecode=1:ef02 /dev/"$DRIVE"
 		else
-			sgdisk -n 1::+1G --typecode=2:ef00 /dev/"$DRIVE"
+			sgdisk -n 1::+1G --typecode=1:ef00 /dev/"$DRIVE"
 		fi
-		sgdisk -n 2::-4G --typecode=3:8300 /dev/"$DRIVE"
-		sgdisk -n 3::+4G --typecode=1:8200 /dev/"$DRIVE"
+		sgdisk -n 2::-4G --typecode=2:8300 /dev/"$DRIVE"
+		sgdisk -n 3::+4G --typecode=3:8200 /dev/"$DRIVE"
 		break
 	else
 		echo "Invalid drive."
