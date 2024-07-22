@@ -59,7 +59,7 @@ do
 		else
 			sgdisk -n 1::+1G --typecode=1:ef00 /dev/"$DRIVE"
 		fi
-		sgdisk -n 2::-4G --typecode=2:8300 /dev/"$DRIVE"
+		sgdisk -n 2::-5G --typecode=2:8300 /dev/"$DRIVE"
 		sgdisk -n 3::+4G --typecode=3:8200 /dev/"$DRIVE"
 		break
 	else
@@ -109,12 +109,6 @@ mkswap /dev/"${DRIVE}"3
 #			Mounting Drives
 #-------------------------------------------------------------------------
 
-if [ "$ENCRYPTED" = true ]; then
-	mount /dev/mapper/cryptlvm /mnt
-else
-	mount /dev/"${DRIVE}"2 /mnt
-fi
-
 if [ -d "/sys/firmware/efi" ]; then
 	mkdir /mnt/boot 				
 	mount /dev/disk/by-label/BOOT /mnt/boot 
@@ -123,6 +117,12 @@ if [ -d "/sys/firmware/efi" ]; then
 else
 	mkdir /mnt/boot 				
 	mount /dev/"${DRIVE}"1 /mnt/boot 
+fi
+
+if [ "$ENCRYPTED" = true ]; then
+	mount /dev/mapper/cryptlvm /mnt
+else
+	mount /dev/"${DRIVE}"2 /mnt
 fi
 
 swapon /dev/"${DRIVE}"3
