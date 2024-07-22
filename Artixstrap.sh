@@ -197,6 +197,7 @@ sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 #			Setting up Mirrors
 #-------------------------------------------------------------------------
 
+pacman -Sy pacman-contrib
 echo "Generating mirror list"
 rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
