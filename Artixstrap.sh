@@ -1,7 +1,5 @@
 #!/bin/sh
 
-artix-chroot /mnt << EOF
-
 LOGFILE=/root/artixstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
 
@@ -89,12 +87,6 @@ do
 		fi
 	fi
 done
-#-------------------------------------------------------------------------
-#			Sudo no Passowrd
-#-------------------------------------------------------------------------
-
-sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
-sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
 #-------------------------------------------------------------------------
 #			Set Hostname
@@ -116,8 +108,8 @@ done
 #-------------------------------------------------------------------------
 {
 	echo 127.0.0.1	localhost
-	::1	localhost
-	127.0.1.1	"$SETHOSTNAME".localdomain  "$SETHOSTNAME"
+	echo "::1    localhost"
+	echo 127.0.1.1	"$SETHOSTNAME".localdomain  "$SETHOSTNAME"
 }  >> /etc/hosts
  
 #echo "127.0.0.1        localhost" >> /etc/hosts
@@ -148,6 +140,47 @@ do
 		echo "Invalid region."
 	fi
 done
+
+#-------------------------------------------------------------------------
+#			      Choose where grub should be installed
+#-------------------------------------------------------------------------
+
+
+lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
+while true 
+do
+	read -rp "Choose a drive to install grub on. " DRIVE
+    break
+done
+
+#-------------------------------------------------------------------------
+#			      Chrooting into newly installed system
+#-------------------------------------------------------------------------
+
+artix-chroot /mnt << EOF
+
+echo "root:$ROOTPASS" | chpasswd
+
+useradd -mG wheel "$USERNAME"
+echo "$USERNAME:$PASS" | chpasswd
+
+echo "$SETHOSTNAME" >> /etc/hostname
+
+{
+	echo 127.0.0.1	localhost
+	echo "::1    localhost"
+	echo 127.0.1.1	"$SETHOSTNAME".localdomain  "$SETHOSTNAME"
+}  >> /etc/hosts
+
+ln -sf "/usr/share/zoneinfo/$REGION" /etc/localtime
+ln -sf "/usr/share/zoneinfo/$REGION/$CITY" /etc/localtime
+
+#-------------------------------------------------------------------------
+#			Sudo no Passowrd
+#-------------------------------------------------------------------------
+
+sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
 #-------------------------------------------------------------------------
 #			Generate Locale
@@ -213,12 +246,6 @@ fi
 #			Installing Bootloader
 #-------------------------------------------------------------------------
 
-lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
-while true 
-do
-	read -rp "Choose a drive to install grub on. " DRIVE
-    break
-done
 
 if [ ! -d "/sys/firmware/efi" ]; then
 	grub-install --recheck /dev/"$DRIVE"
