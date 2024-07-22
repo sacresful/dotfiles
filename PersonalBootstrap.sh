@@ -4,6 +4,9 @@
 #				Basic Setup
 #-------------------------------------------------------------------------
 
+LOGFILE=/root/personalbootstrap.log
+exec > >(tee -a "$LOGFILE") 2>&1
+
 install () {
 	sudo pacman -S --noconfirm "$@"
 }
@@ -243,3 +246,4 @@ rm /home/"$USERNAME"/.bash_logout
 rm /home/"$USERNAME"/.bash_profile
 rm /home/"$USERNAME"/.bashrc																																																		
 	
+cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log

@@ -1,5 +1,8 @@
 #!/bin/sh
 
+LOGFILE=/root/artixstrap.log
+exec > >(tee -a "$LOGFILE") 2>&1
+
 while true
 do
 	read -rsp "Enter root password: " ROOTPASS
@@ -198,3 +201,5 @@ else
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
+
+cp "$LOGFILE" /home/"$USERNAME"/artixstrap.log
