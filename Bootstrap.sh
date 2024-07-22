@@ -177,4 +177,4 @@ git clone https://github.com/sacresful/dotfiles
 ./Artixstrap.sh
 EOF
 
-cp "$LOGFILE" /mnt/home/"$USERNAME"/bootrap.log
+cp "$LOGFILE" /mnt/home/"$USERNAME"/bootstrap.log
