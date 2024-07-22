@@ -193,6 +193,13 @@ fi
 #			Installing Bootloader
 #-------------------------------------------------------------------------
 
+lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
+while true 
+do
+	read -rp "Choose a drive to install grub on. " DRIVE
+    break
+done
+
 if [ ! -d "/sys/firmware/efi" ]; then
 	grub-install --recheck /dev/"$DRIVE"
 else
