@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# install bare minimum
-
 LOGFILE=/home/artix/bootstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
 
@@ -9,7 +7,7 @@ install () {
 	basestrap /mnt "$@"
 }
 
-pacman -S --noconfirm gptfdisk parted	
+pacman -S --noconfirm --needed gptfdisk parted pacman-contrib
 
 while true 
 do
@@ -105,61 +103,12 @@ fi
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
 #MIRRORS
-while true
-do
-	read -p "Enter your location (e.g., Country/City): " LOCATION
-	
-	if [ -z "$LOCATION" ]; then
-        echo "No location provided. Please try again."
-        continue
-    fi
+#cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlistOG
+#sed -i '/^## North America$/,/^##/!b;//d' "$MIRRORLIST_FILE"
 
-    START_LINE=$(grep -n "^# ${LOCATION}" "$MIRRORLIST" | head -n 1 | cut -d: -f1)
-
-    if [ -z "$START_LINE" ]; then
-        echo "Location not found. Please try again."
-        continue
-    fi
-
-    END_LINE=$(awk "NR > $START_LINE" "$MIRRORLIST" | grep -n "^#" | head -n 1 | cut -d: -f1)
-    if [ -z "$END_LINE" ]; then
-        END_LINE=$(wc -l < "$MIRRORLIST")
-    else
-        END_LINE=$((START_LINE + END_LINE - 1))
-    fi
-
-    EXTRACTED_SECTION=$(sed -n "${START_LINE},${END_LINE}p" "$MIRRORLIST")
-
-    # Remove existing mirrors below the `# Default mirrors` section
-    awk "/^# Default mirrors/{flag=1; next}/^#/{flag=0}flag" "$MIRRORLIST" > "$MIRRORLIST.tmp"
-    mv "$MIRRORLIST.tmp" "$MIRRORLIST"
-
-    # Insert the extracted section above the `# Default mirrors` section
-    sed -i "/^# Default mirrors/i $EXTRACTED_SECTION" "$MIRRORLIST"
-
-    echo "Mirrorlist updated successfully."
-    break
-	
-#	START_LINE=$(grep -n "^# ${location}" "$MIRRORLIST" | head -n 1 | cut -d: -f1)
-#    if [ -z "$START_LINE" ]; then
-#        return 1
-#    fi
-#	
-#	END_LINE=$(awk "NR > $START_LINE" "$MIRRORLIST" | grep -n "^#" | head -n 1 | cut -d: -f1)
- #   if [ -z "$END_LINE" ]; then
-#        END_LINE=$(wc -l < "$MIRRORLIST")
-#    else
-#        END_LINE=$((START_LINE + END_LINE - 1))
- #   fi
-#	
-#	EXTRACTED_SECTION=$(sed -n "${START_LINE},${END_LINE}p" "$MIRRORLIST")
-#    awk "/^# Default mirrors/{flag=1; next}/^#/{flag=0}flag" "$MIRRORLIST" > "$MIRRORLIST.tmp"
- #   mv "$MIRRORLIST.tmp" "$MIRRORLIST"
- #   sed -i "/^# Default mirrors/i $EXTRACTED_SECTION" "$MIRRORLIST"
-	
-done
-
-#/etc/pacman.d/mirrorlist 
+rankmirror -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
+mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
 # install system
 system=(
@@ -186,7 +135,7 @@ fi
 fstabgen -U /mnt >> /mnt/etc/fstab
 
 # get into actual system
-artix-chroot /mnt bash
+artix-chroot /mnt bash << EOF
 
 # set root password
 while true
@@ -288,6 +237,11 @@ locale-gen
 #parallel downloading
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
+#setup mirrors
+rankmirror -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
+mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
+
 # Enable arch remote repositories
 pacman -Sy --noconfirm artix-archlinux-support
 
@@ -305,7 +259,7 @@ Include = /etc/pacman.d/mirrorlist-arch
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
 if [ "$ENCRYPTED" = true ]; then
-	sed -i '/^HOOKS=/ {s/"\(.*\)"/"\1 crypt lvm2"/}' "/etc/mkinitcpio.conf"
+	sed -i 's/filesystems/encrypt lvm2 filesystems/g' /etc/mkinitcpio.conf
 	mkinitcpio -p linux
 fi
 
@@ -314,11 +268,6 @@ $DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\
 
 
 sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
-#/etc/default/grub
-#GRUB_CMDLINE_LINUX_DEFAULT:
-##cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm 
-#root=UUID=$DECRYPTEDUUID
-
 
 # installing bootloader
 if [ ! -d "/sys/firmware/efi" ]; then
@@ -332,5 +281,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 
 exit
-cp "$LOGFILE" /home/"$USERNAME"/
+EOF
+
+cp "$LOGFILE" /mnt/home/"$USERNAME"/
 reboot
