@@ -179,11 +179,13 @@ artix-chroot /mnt bash << EOF
 
 while true
 do
-	read -p -s "Enter root password: " ROOTPASS
+	read -sp "Enter root password: " ROOTPASS
 	if [ -z "$ROOTPASS" ]; then
 		echo "Password cannot be empty"
+		echo
 	else
-		read -p -s "Confirm root password: " ROOTPASS_CONFIRM
+		read -sp "Confirm root password: " ROOTPASS_CONFIRM
+		echo
 		if [ "$ROOTPASS" != "$ROOTPASS_CONFIRM" ]; then
 			echo "Passwords do not match"
 		else
@@ -206,7 +208,7 @@ while true
 do
 	read -p "Enter username:" USERNAME
 	
-	if [ -z "$USERNAME"]; then
+	if [ -z "$USERNAME" ]; then
 		echo "Username cannot be empty"
 	else
 		useradd -mG wheel "$USERNAME"
@@ -221,22 +223,25 @@ done
 
 while true
 do
-        read -p -s "Enter your new password: " PASSWORD1
-        echo
-        read -p -s "Re-enter your new password: " PASSWORD2
-        echo
-
-        if [ "$PASSWORD1" != "$PASSWORD2" ]; then
-            echo "Passwords do not match. Please try again. "
-        else
-            echo -e "$PASSWORD1\n$PASSWORD1" | sudo passwd "$USERNAME"
-            if [ $? -eq 0 ]; then
-                echo "Password has been updated successfully. "
-            else
-                echo "Failed to update the password. "
-            fi
-            break
-        fi
+	read -sp "Enter root password: " PASS
+	if [ -z "$PASS" ]; then
+		echo "Password cannot be empty"
+		echo
+	else
+		read -sp "Confirm user password: " PASS_CONFIRM
+		echo
+		if [ "$PASS" != "$PASS_CONFIRM" ]; then
+			echo "Passwords do not match"
+		else
+			echo "$USERNAME:$PASS" | chpasswd
+			if [ $? -eq 0 ]; then
+				echo "Password successfully changed"
+				break
+			else
+				echo "Failed to change password"
+			fi
+		fi
+	fi
 done
 #-------------------------------------------------------------------------
 #			Sudo no Passowrd
@@ -346,11 +351,11 @@ if [ "$ENCRYPTED" = true ]; then
 	mkinitcpio -p linux
 fi
 
+if [ "$ENCRYPTED" = true ]; then
 $ENCRYPTEDUUID=blkid | grep '^/dev/${DRIVE}3' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
 $DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
-
-
 sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
+fi
 
 #-------------------------------------------------------------------------
 #			Installing Bootloader
