@@ -180,9 +180,9 @@ artix-chroot /mnt bash << EOF
 while true
 do
 	read -sp "Enter root password: " ROOTPASS
+	echo
 	if [ -z "$ROOTPASS" ]; then
 		echo "Password cannot be empty"
-		echo
 	else
 		read -sp "Confirm root password: " ROOTPASS_CONFIRM
 		echo
@@ -223,10 +223,10 @@ done
 
 while true
 do
-	read -sp "Enter root password: " PASS
+	read -sp "Enter user password: " PASS
+	echo
 	if [ -z "$PASS" ]; then
 		echo "Password cannot be empty"
-		echo
 	else
 		read -sp "Confirm user password: " PASS_CONFIRM
 		echo
@@ -319,7 +319,8 @@ sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 #			Setting up Mirrors
 #-------------------------------------------------------------------------
 
-rankmirror -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+rankmirrors -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+echo "Generating mirror list"
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
