@@ -35,7 +35,6 @@ do
 		else
 			echo "root:$ROOTPASS" | chpasswd
 			if [ $? -eq 0 ]; then
-				echo "Password successfully changed"
 				break
 			else
 				echo "Failed to change password"
@@ -56,7 +55,6 @@ do
 		echo "Username cannot be empty"
 	else
 		useradd -mG wheel "$USERNAME"
-		echo "User '$USERNAME' has been created"
 		break
 	fi
 done
@@ -79,7 +77,6 @@ do
 		else
 			echo "$USERNAME:$PASS" | chpasswd
 			if [ $? -eq 0 ]; then
-				echo "Password successfully changed"
 				break
 			else
 				echo "Failed to change password"
@@ -125,13 +122,11 @@ do
 	read -rp "Enter your region: " REGION
 	if [ -f "/usr/share/zoneinfo/$REGION" ]; then
 		ln -sf "/usr/share/zoneinfo/$REGION" /etc/localtime
-		echo "Timezone set to $REGION."
 		break
 	elif [ -d "/usr/share/zoneinfo/$REGION" ]; then
 		read -rp "Enter your city:" CITY
 		if [ -f "/usr/share/zoneinfo/$REGION/$CITY" ]; then
 			ln -sf "/usr/share/zoneinfo/$REGION/$CITY" /etc/localtime
-			echo "Timezone set to $REGION/$CITY"
 			break
 		else
 			echo "Invalid city."
@@ -157,7 +152,7 @@ done
 #			      Chrooting into newly installed system
 #-------------------------------------------------------------------------
 
-artix-chroot /mnt << EOF
+artix-chroot /mnt << EOF &> "$LOGFILE"
 
 echo "root:$ROOTPASS" | chpasswd
 
@@ -256,5 +251,4 @@ fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
-cp "$LOGFILE" /home/"$USERNAME"/artixstrap.log
 EOF
