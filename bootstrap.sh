@@ -109,6 +109,12 @@ mkswap /dev/"${DRIVE}"3
 #			Mounting Drives
 #-------------------------------------------------------------------------
 
+if [ "$ENCRYPTED" = true ]; then
+	mount /dev/mapper/cryptlvm /mnt
+else
+	mount /dev/"${DRIVE}"2 /mnt
+fi
+
 if [ -d "/sys/firmware/efi" ]; then
 	mkdir /mnt/boot 				
 	mount /dev/disk/by-label/BOOT /mnt/boot 
@@ -117,12 +123,6 @@ if [ -d "/sys/firmware/efi" ]; then
 else
 	mkdir /mnt/boot 				
 	mount /dev/"${DRIVE}"1 /mnt/boot 
-fi
-
-if [ "$ENCRYPTED" = true ]; then
-	mount /dev/mapper/cryptlvm /mnt
-else
-	mount /dev/"${DRIVE}"2 /mnt
 fi
 
 swapon /dev/"${DRIVE}"3
@@ -194,6 +194,7 @@ do
 		if [ "$ROOTPASS" != "$ROOTPASS_CONFIRM" ]; then
 			echo "Passwords do not match"
 		else
+			break
 			if [ $? -eq 0 ]; then
 				break
 			else
@@ -234,6 +235,7 @@ do
 		if [ "$PASS" != "$PASS_CONFIRM" ]; then
 			echo "Passwords do not match"
 		else
+			break
 			if [ $? -eq 0 ]; then
 				break
 			else
@@ -391,6 +393,7 @@ else
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
+exit
 
 EOF
 
