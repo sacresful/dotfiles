@@ -1,13 +1,29 @@
 #!/bin/sh
 
+#-------------------------------------------------------------------------
+#							Basic Setup
+#-------------------------------------------------------------------------
+
 LOGFILE=/home/artix/bootstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
+
+#-------------------------------------------------------------------------
+#							Functions
+#-------------------------------------------------------------------------
 
 install () {
 	basestrap /mnt "$@"
 }
 
-pacman -S --noconfirm --needed gptfdisk parted pacman-contrib
+#-------------------------------------------------------------------------
+#                    Installing Prerequisites
+#-------------------------------------------------------------------------
+
+pacman -S --noconfirm --needed gptfdisk parted pacman-contrib btrfs-progs
+
+#-------------------------------------------------------------------------
+#							Installation
+#-------------------------------------------------------------------------
 
 while true 
 do
@@ -27,7 +43,10 @@ do
 	esac
 done
 
-# Format drives, create partitions.
+#-------------------------------------------------------------------------
+#						Formatting Drives
+#-------------------------------------------------------------------------
+
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
 while true 
 do
@@ -49,7 +68,10 @@ do
 done
 partprobe ${DRIVE}
 
-# make filesystems
+#-------------------------------------------------------------------------
+#                    Creating Filesystems
+#-------------------------------------------------------------------------
+
 mkswap /dev/${DRIVE}1
 mkfs.fat -F32 /dev/${DRIVE}2
 if [ "$ENCRYPTED" = true ]; then
@@ -81,15 +103,17 @@ read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM
 	esac
 done
 
+#-------------------------------------------------------------------------
+#						Mounting Drives
+#-------------------------------------------------------------------------
 
-# mounting drives
 swapon /dev/${DRIVE}1
 if [ "$ENCRYPTED" = true ]; then
 	mount /dev/mapper/cryptlvm /mnt
 else
 	mount /dev/${DRIVE}3 /mnt
 fi
-# mounting boot 
+
 if [ -d "/sys/firmware/efi" ]; then
 	mkdir /mnt/boot 				
 	mount /dev/disk/by-label/BOOT /mnt/boot 
@@ -102,15 +126,21 @@ fi
 
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-#MIRRORS
+#-------------------------------------------------------------------------
+#						Setting Up Mirrors
+#-------------------------------------------------------------------------
+
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlistOG
 #sed -i '/^## North America$/,/^##/!b;//d' "$MIRRORLIST_FILE"
-
-rankmirror -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
+echo "Generating mirror list"
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
-# install system
+#-------------------------------------------------------------------------
+#						Installing Linux
+#-------------------------------------------------------------------------
+
 system=(
 	base base-devel # base
 	dinit elogind-dinit # init system
@@ -131,24 +161,47 @@ if [ "$ENCRYPTED" = true ]; then
 fi
 
 
-# generate fstab - start drives after booting
+#-------------------------------------------------------------------------
+#						Generating Fstab
+#-------------------------------------------------------------------------
+
 fstabgen -U /mnt >> /mnt/etc/fstab
 
-# get into actual system
+#-------------------------------------------------------------------------
+#					Installing Base System
+#-------------------------------------------------------------------------
+
 artix-chroot /mnt bash << EOF
 
-# set root password
+#-------------------------------------------------------------------------
+#						Setting Root Password
+#-------------------------------------------------------------------------
+
 while true
 do
 	read -p -s "Enter root password: " ROOTPASS
 	if [ -z "$ROOTPASS" ]; then
 		echo "Password cannot be empty"
 	else
-		passwd "$ROOTPASS"
+		read -p -s "Confirm root password: " ROOTPASS_CONFIRM
+		if [ "$ROOTPASS" != "$ROOTPASS_CONFIRM" ]; then
+			echo "Passwords do not match"
+		else
+			echo "root:$ROOTPASS" | chpasswd
+			if [ $? -eq 0 ]; then
+				echo "Password successfully changed"
+				break
+			else
+				echo "Failed to change password"
+			fi
+		fi
 	fi
 done
 
-# create user
+#-------------------------------------------------------------------------
+#						Creating a User
+#-------------------------------------------------------------------------
+
 while true
 do
 	read -p "Enter username:" USERNAME
@@ -162,7 +215,10 @@ do
 	fi
 done
 
-# Set password for the user
+#-------------------------------------------------------------------------
+#						Setting User's Password
+#-------------------------------------------------------------------------
+
 while true
 do
         read -p -s "Enter your new password: " PASSWORD1
@@ -182,12 +238,17 @@ do
             break
         fi
 done
+#-------------------------------------------------------------------------
+#						Sudo no Passowrd
+#-------------------------------------------------------------------------
 
-# sudo no password rights
 sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
-# set hostname
+#-------------------------------------------------------------------------
+#						Set Hostname
+#-------------------------------------------------------------------------
+
 while true
 do
 	read -p "Enter hostname: " HOSTNAME
@@ -200,12 +261,18 @@ do
 	fi
 done
 
-# set default ips
+#-------------------------------------------------------------------------
+#						Default Ips
+#-------------------------------------------------------------------------
+
 echo "127.0.0.1        localhost" >> /etc/hosts
 echo "::1              localhost" >> /etc/hosts
 echo "127.0.1.1        "$HOSTNAME".localdomain  "$HOSTNAME"" >> /etc/hosts
 
-# set timezone
+#-------------------------------------------------------------------------
+#						Set Timezone
+#-------------------------------------------------------------------------
+
 while true
 do
 	read -p "Enter your region: " REGION
@@ -227,22 +294,34 @@ do
 	fi
 done
 
-# generate locale
+#-------------------------------------------------------------------------
+#						Generate Locale
+#-------------------------------------------------------------------------
+
 sed -i 's/^#pl_PL.UTF-8 UTF-8/pl_PL.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/^#pl_PL ISO-8859-2/pl_PL ISO-8859-2/' /etc/locale.gen
 sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/^#en_US ISO-8859-1/en_US ISO-8859-1/' /etc/locale.gen
 locale-gen
 
-#parallel downloading
+#-------------------------------------------------------------------------
+#						Parallel Downloading
+#-------------------------------------------------------------------------
+
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
-#setup mirrors
+#-------------------------------------------------------------------------
+#						Setting up Mirrors
+#-------------------------------------------------------------------------
+
 rankmirror -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
-# Enable arch remote repositories
+#-------------------------------------------------------------------------
+#						Enable Arch Repositories
+#-------------------------------------------------------------------------
+
 pacman -Sy --noconfirm artix-archlinux-support
 
 sed -i "/\[lib32]/,/Include'"'s/^#//' /etc/pacman.conf
@@ -258,6 +337,10 @@ Include = /etc/pacman.d/mirrorlist-arch
 [multilib]
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
+#-------------------------------------------------------------------------
+#						Encrypted Installation Features
+#-------------------------------------------------------------------------
+
 if [ "$ENCRYPTED" = true ]; then
 	sed -i 's/filesystems/encrypt lvm2 filesystems/g' /etc/mkinitcpio.conf
 	mkinitcpio -p linux
@@ -269,7 +352,10 @@ $DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\
 
 sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
 
-# installing bootloader
+#-------------------------------------------------------------------------
+#						Installing Bootloader
+#-------------------------------------------------------------------------
+
 if [ ! -d "/sys/firmware/efi" ]; then
 	grub-install --recheck /dev/"$DRIVE"
 else
