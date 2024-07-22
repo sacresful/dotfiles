@@ -1,7 +1,27 @@
 #!/bin/sh
 
+artix-chroot /mnt << EOF
+
 LOGFILE=/root/artixstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
+
+while true 
+do
+	read -rp "Encrypted installation? Y/N " TYPE
+	case $TYPE in 
+		[Yy][Ee][Ss]$ | [Yy])
+			ENCRYPTED=true
+			break
+			;;
+		[Nn][Oo]$ | [Nn])
+			ENCRYPTED=false
+			break
+			;;
+		*)
+			echo "Please enter yes or no. "
+			;;
+	esac
+done
 
 while true
 do
@@ -210,3 +230,4 @@ fi
 grub-mkconfig -o /boot/grub/grub.cfg
 
 cp "$LOGFILE" /home/"$USERNAME"/artixstrap.log
+EOF
