@@ -331,16 +331,8 @@ echo "127.0.1.1        $SETHOSTNAME.localdomain  $SETHOSTNAME" >> /etc/hosts
 ln -sf "/usr/share/zoneinfo/$REGION" /etc/localtime
 ln -sf "/usr/share/zoneinfo/$REGION/$CITY" /etc/localtime
 
-#-------------------------------------------------------------------------
-#			Sudo no Passowrd
-#-------------------------------------------------------------------------
-
 sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
-
-#-------------------------------------------------------------------------
-#			Generate Locale
-#-------------------------------------------------------------------------
 
 sed -i 's/^#pl_PL.UTF-8 UTF-8/pl_PL.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/^#pl_PL ISO-8859-2/pl_PL ISO-8859-2/' /etc/locale.gen
@@ -348,24 +340,12 @@ sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/^#en_US ISO-8859-1/en_US ISO-8859-1/' /etc/locale.gen
 locale-gen
 
-#-------------------------------------------------------------------------
-#			Parallel Downloading
-#-------------------------------------------------------------------------
-
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
-
-#-------------------------------------------------------------------------
-#			Setting up Mirrors
-#-------------------------------------------------------------------------
 
 pacman -Sy --noconfirm pacman-contrib
 rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
-
-#-------------------------------------------------------------------------
-#			Enable Arch Repositories
-#-------------------------------------------------------------------------
 
 pacman -Sy --noconfirm artix-archlinux-support
 
@@ -397,11 +377,6 @@ if [ "$ENCRYPTED" = true ]; then
 	sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="quiet splash/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
 	#sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
 fi
-
-#-------------------------------------------------------------------------
-#			Installing Bootloader
-#-------------------------------------------------------------------------
-
 
 if [ ! -d "/sys/firmware/efi" ]; then
 	grub-install --recheck /dev/"$DRIVE"
