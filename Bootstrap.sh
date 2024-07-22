@@ -319,8 +319,8 @@ sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 #			Setting up Mirrors
 #-------------------------------------------------------------------------
 
-rankmirrors -v -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 echo "Generating mirror list"
+rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
@@ -375,5 +375,5 @@ grub-mkconfig -o /boot/grub/grub.cfg
 exit
 EOF
 
-cp "$LOGFILE" /mnt/home/"$USERNAME"/
+cp "$LOGFILE" /mnt/home/"$USERNAME"/boostrap.log
 reboot
