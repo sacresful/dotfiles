@@ -132,8 +132,8 @@ sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlistOG
 #sed -i '/^## North America$/,/^##/!b;//d' "$MIRRORLIST_FILE"
-rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 echo "Generating mirror list"
+rankmirrors -n 10 -m 0.5 /etc/pacman.d/mirrorlist | grep -i '^Server' > /etc/pacman.d/mymirrorlist
 mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
