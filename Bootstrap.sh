@@ -27,7 +27,7 @@ pacman -S --noconfirm --needed gptfdisk parted pacman-contrib btrfs-progs
 
 while true 
 do
-	read -p "Encrypted installation? Y/N " TYPE
+	read -rp "Encrypted installation? Y/N " TYPE
 	case $TYPE in 
 		[Yy][Ee][Ss]$ | [Yy])
 			ENCRYPTED=true
@@ -50,7 +50,7 @@ done
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
 while true 
 do
-	read -p "Choose a drive to install linux on. " DRIVE
+	read -rp "Choose a drive to install linux on. " DRIVE
 	if [ -b "/dev/$DRIVE" ]; then
 		sgdisk -Z /dev/"$DRIVE"
 		sgdisk -a 2048 -o /dev/"$DRIVE"
@@ -66,29 +66,29 @@ do
 		echo "Invalid drive."
 	fi
 done
-partprobe ${DRIVE}
+partprobe "${DRIVE}"
 
 #-------------------------------------------------------------------------
 #                    Creating Filesystems
 #-------------------------------------------------------------------------
 
-mkswap /dev/${DRIVE}1
-mkfs.fat -F32 /dev/${DRIVE}2
+mkswap /dev/"${DRIVE}"1
+mkfs.fat -F32 /dev/"${DRIVE}"2
 if [ "$ENCRYPTED" = true ]; then
-	cryptsetup luksFormat /dev/${DRIVE}3
-	cryptsetup open /dev/${DRIVE}3 cryptlvm
+	cryptsetup luksFormat /dev/"${DRIVE}"3
+	cryptsetup open /dev/"${DRIVE}"3 cryptlvm
 fi
 
 while true
 do
 
-read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM 
+read -rp "Which filesystem: ext4 / btrfs? " FILESYSTEM 
 	case $FILESYSTEM in
 		ext4)
 			if [ "$ENCRYPTED" = true ]; then
 				mkfs.ext4 /dev/mapper/cryptlvm
 			else
-				mkfs.ext4 /dev/${DRIVE}3
+				mkfs.ext4 /dev/"${DRIVE}"3
 			fi
 			break
 			;;
@@ -96,7 +96,7 @@ read -p "Which filesystem: ext4 / btrfs? " FILESYSTEM
 			if [ "$ENCRYPTED" = true ]; then
 				mkfs.btrfs /dev/mapper/cryptlvm
 			else
-				mkfs.btrfs /dev/${DRIVE}3
+				mkfs.btrfs /dev/"${DRIVE}"3
 			fi
 			break
 			;;
@@ -107,11 +107,11 @@ done
 #			Mounting Drives
 #-------------------------------------------------------------------------
 
-swapon /dev/${DRIVE}1
+swapon /dev/"${DRIVE}"1
 if [ "$ENCRYPTED" = true ]; then
 	mount /dev/mapper/cryptlvm /mnt
 else
-	mount /dev/${DRIVE}3 /mnt
+	mount /dev/"${DRIVE}"3 /mnt
 fi
 
 if [ -d "/sys/firmware/efi" ]; then
@@ -121,7 +121,7 @@ if [ -d "/sys/firmware/efi" ]; then
 	mount /dev/disk/by-label/ESP /mnt/boot/efi
 else
 	mkdir /mnt/boot 				
-	mount /dev/${DRIVE}2 /mnt/boot 
+	mount /dev/"${DRIVE}"2 /mnt/boot 
 fi
 
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
@@ -171,7 +171,7 @@ fstabgen -U /mnt >> /mnt/etc/fstab
 #			Installing Base System
 #-------------------------------------------------------------------------
 
-artix-chroot /mnt bash << EOF
+artix-chroot /mnt bash  << EOF
 
 #-------------------------------------------------------------------------
 #			Setting Root Password
@@ -179,12 +179,12 @@ artix-chroot /mnt bash << EOF
 
 while true
 do
-	read -sp "Enter root password: " ROOTPASS
+	read -rsp "Enter root password: " ROOTPASS
 	echo
 	if [ -z "$ROOTPASS" ]; then
 		echo "Password cannot be empty"
 	else
-		read -sp "Confirm root password: " ROOTPASS_CONFIRM
+		read -rsp "Confirm root password: " ROOTPASS_CONFIRM
 		echo
 		if [ "$ROOTPASS" != "$ROOTPASS_CONFIRM" ]; then
 			echo "Passwords do not match"
@@ -206,7 +206,7 @@ done
 
 while true
 do
-	read -p "Enter username:" USERNAME
+	read -rp "Enter username: " USERNAME
 	
 	if [ -z "$USERNAME" ]; then
 		echo "Username cannot be empty"
@@ -223,12 +223,12 @@ done
 
 while true
 do
-	read -sp "Enter user password: " PASS
+	read -rsp "Enter user password: " PASS
 	echo
 	if [ -z "$PASS" ]; then
 		echo "Password cannot be empty"
 	else
-		read -sp "Confirm user password: " PASS_CONFIRM
+		read -rsp "Confirm user password: " PASS_CONFIRM
 		echo
 		if [ "$PASS" != "$PASS_CONFIRM" ]; then
 			echo "Passwords do not match"
@@ -256,12 +256,11 @@ sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: A
 
 while true
 do
-	read -p "Enter hostname: " HOSTNAME
-
-	if [ -z "$HOSTNAME" ]; then
+	read -rp "Enter hostname: " SETHOSTNAME
+	if [ -z "$SETHOSTNAME" ]; then
 		echo "Enter valid hostname."
 	else
-		echo "$HOSTNAME" >> /etc/hostname
+		echo "$SETHOSTNAME" >> /etc/hostname
 		break
 	fi
 done
@@ -269,10 +268,15 @@ done
 #-------------------------------------------------------------------------
 #			Default Ips
 #-------------------------------------------------------------------------
-
-echo "127.0.0.1        localhost" >> /etc/hosts
-echo "::1              localhost" >> /etc/hosts
-echo "127.0.1.1        "$HOSTNAME".localdomain  "$HOSTNAME"" >> /etc/hosts
+{
+	echo 127.0.0.1	localhost >> /etc/hosts
+	::1	localhost >> /etc/hosts
+	127.0.1.1	"$SETHOSTNAME".localdomain  "$SETHOSTNAME"
+}  >> /etc/hosts
+ 
+#echo "127.0.0.1        localhost" >> /etc/hosts
+#echo "::1              localhost" >> /etc/hosts
+#echo "127.0.1.1        $SETHOSTNAME.localdomain  $SETHOSTNAME" >> /etc/hosts
 
 #-------------------------------------------------------------------------
 #			Set Timezone
@@ -280,16 +284,16 @@ echo "127.0.1.1        "$HOSTNAME".localdomain  "$HOSTNAME"" >> /etc/hosts
 
 while true
 do
-	read -p "Enter your region: " REGION
-	if [ -f "/usr/share/zoneinfo/"$REGION"" ]; then
-		ln -sf "/usr/share/zoneinfo/"$REGION"" /etc/localtime
-		echo "Timezone set to "$REGION"."
+	read -rp "Enter your region: " REGION
+	if [ -f "/usr/share/zoneinfo/$REGION" ]; then
+		ln -sf "/usr/share/zoneinfo/$REGION" /etc/localtime
+		echo "Timezone set to $REGION."
 		break
-	elif [ -d "/usr/share/zoneinfo/"$REGION"" ]; then
-		read -p "Enter your city:" CITY
-		if [ -f "/usr/share/zoneinfo/"$REGION"/"$CITY"" ]; then
-			ln -sf "/usr/share/zoneinfo/"$REGION"/"$CITY"" /etc/localtime
-			echo "Timezone set to "$REGION"/"$CITY""
+	elif [ -d "/usr/share/zoneinfo/$REGION" ]; then
+		read -rp "Enter your city:" CITY
+		if [ -f "/usr/share/zoneinfo/$REGION/$CITY" ]; then
+			ln -sf "/usr/share/zoneinfo/$REGION/$CITY" /etc/localtime
+			echo "Timezone set to $REGION/$CITY"
 			break
 		else
 			echo "Invalid city."
@@ -353,9 +357,10 @@ if [ "$ENCRYPTED" = true ]; then
 fi
 
 if [ "$ENCRYPTED" = true ]; then
-$ENCRYPTEDUUID=blkid | grep '^/dev/${DRIVE}3' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
-$DECRYPTEDUUID=blkid | grep '^/dev/mapper/cryptlvm' | sed -n 's/.*UUID="\([^"]*\)".*/\1/p'
-sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
+	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
+	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
+	sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="quiet splash/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
+	#sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
 fi
 
 #-------------------------------------------------------------------------

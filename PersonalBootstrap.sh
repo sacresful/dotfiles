@@ -21,14 +21,14 @@ pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 #-------------------------------------------------------------------------
 
 gpu_type=$(lspci)
-if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+if grep -E "NVIDIA|GeForce" <<< "${gpu_type}"; then
     pacman -S --noconfirm --needed nvidia
 	nvidia-xconfig
 elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
     pacman -S --noconfirm --needed xf86-video-amdgpu
-elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+elif grep -E "Integrated Graphics Controller" <<< "${gpu_type}"; then
     pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
-elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+elif grep -E "Intel Corporation UHD" <<< "${gpu_type}"; then
     pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
 fi
 
@@ -198,9 +198,9 @@ dinitctl enable tlp
 #			  Install AUR Helper		
 #-------------------------------------------------------------------------
 
-cd repos
+cd repos || exit
 git clone https://aur.archlinux.org/paru.git
-cd paru
+cd paru || exit
 makepkg -si
 
 #yay ookla-speedtest-bin # speedtest
@@ -216,30 +216,30 @@ ln -sf /usr/bin/dash /bin/sh
 #		 Set the default termial shell to zsh 
 #-------------------------------------------------------------------------
 
-sudo echo "export ZDOTDIR="$HOME"/.config/zsh" >> /etc/zsh/zshenv
+echo "export ZDOTDIR=$HOME/.config/zsh" | sudo tee -a /etc/zsh/zshenv > /dev/null
 chsh -s /bin/zsh sacresful
 
 #-------------------------------------------------------------------------
 #		 	Get the desktop environment files 
 #-------------------------------------------------------------------------
 
-sudo cp -R /root/dotfiles/.config /home/$USERNAME/
-sudo cp -R /root/dotfiles/.local /home/$USERNAME/
+sudo cp -R /root/dotfiles/.config /home/"$USERNAME"/
+sudo cp -R /root/dotfiles/.local /home/"$USERNAME"/
 
-cd /home/$USERNAME/.config/suckless/dwm
+cd /home/"$USERNAME"/.config/suckless/dwm || exit
+make install
+cd .. 
+cd dmenu || exit
 make install
 cd ..
-cd dmenu
+cd dwmblocks || exit
 make install
 cd ..
-cd dwmblocks
+cd st || exit
 make install
-cd ..
-cd st
-make install
-cd
+cd || exit
 
-rm /home/$USERNAME/.bash_logout
-rm /home/$USERNAME/.bash_profile
-rm /home/$USERNAME/.bashrc																																																		
+rm /home/"$USERNAME"/.bash_logout
+rm /home/"$USERNAME"/.bash_profile
+rm /home/"$USERNAME"/.bashrc																																																		
 	
