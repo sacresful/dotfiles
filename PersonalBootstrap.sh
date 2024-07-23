@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #-------------------------------------------------------------------------
-#				Basic Setup
+#							Basic Setup
 #-------------------------------------------------------------------------
 
 LOGFILE=/root/personalbootstrap.log
@@ -14,13 +14,13 @@ install () {
 sudo dinitctl enable NetworkManager
 
 #-------------------------------------------------------------------------
-#			Graphic Environment	
+#						  Graphic Environment	
 #-------------------------------------------------------------------------
 
 pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 #-------------------------------------------------------------------------
-#			Graphic Drivers	
+#						   Graphic Drivers	
 #-------------------------------------------------------------------------
 
 gpu_type=$(lspci)
@@ -36,7 +36,7 @@ elif grep -E "Intel Corporation UHD" <<< "${gpu_type}"; then
 fi
 
 #-------------------------------------------------------------------------
-#			   Audio	
+#			  					Audio	
 #-------------------------------------------------------------------------
 
 audio_programs=(
@@ -52,7 +52,7 @@ audio_programs=(
 install "${audio_programs[@]}"
 
 #-------------------------------------------------------------------------
-#			   	Fonts	
+#			   					Fonts	
 #-------------------------------------------------------------------------
 
 fonts=(
@@ -64,13 +64,13 @@ fonts=(
 install "${fonts[@]}"
 
 #-------------------------------------------------------------------------
-#			   	Autologin	
+#			   				  Autologin	
 #-------------------------------------------------------------------------
 
 sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
 
 #-------------------------------------------------------------------------
-#			   Personal Setup		
+#			   				Personal Setup		
 #-------------------------------------------------------------------------
 
 mkdirs () {
@@ -226,8 +226,8 @@ chsh -s /bin/zsh sacresful
 #		 	Get the desktop environment files 
 #-------------------------------------------------------------------------
 
-sudo cp -R /root/dotfiles/.config /home/"$USERNAME"/
-sudo cp -R /root/dotfiles/.local /home/"$USERNAME"/
+cp -R /root/dotfiles/.config /home/"$USERNAME"/
+cp -R /root/dotfiles/.local /home/"$USERNAME"/
 
 cd /home/"$USERNAME"/.config/suckless/dwm || exit
 make install
@@ -242,8 +242,6 @@ cd st || exit
 make install
 cd || exit
 
-rm /home/"$USERNAME"/.bash_logout
-rm /home/"$USERNAME"/.bash_profile
-rm /home/"$USERNAME"/.bashrc																																																		
+rm -rf /home/"$USERNAME"/*																																														
 	
-cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log
+sudo cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log
