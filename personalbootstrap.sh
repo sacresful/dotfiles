@@ -159,6 +159,17 @@ install "${apps[@]}"
 
 xdg-user-dirs-update
 
+remove=(
+	Downloads
+	Music
+	Public
+	Templates
+	Videos
+	Documents
+	Desktop
+	Pictures
+)
+rm -rf /home/($whoami)/"$remove[@]}"
 #-------------------------------------------------------------------------
 # Virtualization		
 #-------------------------------------------------------------------------
