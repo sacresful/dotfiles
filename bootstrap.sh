@@ -15,7 +15,7 @@ install () {
 # Installing Prerequisites
 #-------------------------------------------------------------------------
 
-pacman -S --noconfirm --needed gptfdisk pacman-contrib btrfs-progs
+pacman -S --noconfirm --needed gptfdisk pacman-contrib btrfs-progs parted
 
 #-------------------------------------------------------------------------
 # Formatting Drives
@@ -87,7 +87,8 @@ do
 		else
 			echo "Enter proper drive."
 		fi
-done	
+done
+clear
 partprobe "${DRIVE}"
 
 #-------------------------------------------------------------------------
