@@ -8,16 +8,16 @@ LOGFILE=/root/personalbootstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
 
 install () {
-	sudo pacman -S --noconfirm "$@"
+	pacman -S --noconfirm "$@"
 }
 
-sudo dinitctl enable NetworkManager
+dinitctl enable NetworkManager
 
 #-------------------------------------------------------------------------
 # Graphic Environment	
 #-------------------------------------------------------------------------
 
-sudo pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
+pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 #-------------------------------------------------------------------------
 # Graphic Drivers	
@@ -219,7 +219,7 @@ ln -sf /usr/bin/dash /bin/sh
 # Set the default termial shell to zsh 
 #-------------------------------------------------------------------------
 
-echo "export ZDOTDIR=$HOME/.config/zsh" | sudo tee -a /etc/zsh/zshenv > /dev/null
+echo "export ZDOTDIR=$HOME/.config/zsh" | tee -a /etc/zsh/zshenv > /dev/null
 chsh -s /bin/zsh sacresful
 
 #-------------------------------------------------------------------------
@@ -244,4 +244,4 @@ cd || exit
 
 rm -rf /home/"$USERNAME"/*																																														
 	
-sudo cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log
+cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log
