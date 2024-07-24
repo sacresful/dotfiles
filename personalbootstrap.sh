@@ -159,17 +159,9 @@ install "${apps[@]}"
 
 xdg-user-dirs-update
 
-remove=(
-	Downloads
-	Music
-	Public
-	Templates
-	Videos
-	Documents
-	Desktop
-	Pictures
-)
-rm -rf /home/($whoami)/"$remove[@]}"
+cd /home/($whoami)/
+rm -rf Downloads Music Public Templates Videos Documents Desktop Pictures
+
 #-------------------------------------------------------------------------
 # Virtualization		
 #-------------------------------------------------------------------------
@@ -224,7 +216,7 @@ makepkg -si
 # Set the default shell to dash 
 #-------------------------------------------------------------------------
 
-ln -sf /usr/bin/dash /bin/sh
+sudo ln -sf /usr/bin/dash /bin/sh
 
 #-------------------------------------------------------------------------
 # Set the default termial shell to zsh 
@@ -241,16 +233,17 @@ cp -R /home/$(whoami)/dotfiles/.config /home/$(whoami)/
 cp -R /home/$(whoami)/dotfiles/.local /home/$(whoami)/
 
 cd /home/$(whoami)/.config/suckless/dwm || exit
-make install
+sudo make install
 cd .. 
 cd dmenu || exit
-make install
+sudo make install
 cd ..
 cd dwmblocks || exit
-make install
+sudo make install
 cd ..
 cd st || exit
-make install
+sudo make install
 cd || exit
 
-rm -rf /home/$(whoami)/*																													
+rm -rf /home/$(whoami)/dotfiles				
+rm -rf /home/$(whoami)/																									
