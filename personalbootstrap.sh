@@ -4,20 +4,20 @@
 # Basic Setup
 #-------------------------------------------------------------------------
 
-LOGFILE=/root/personalbootstrap.log
+LOGFILE=/home/$(whoami)/personalbootstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
 
 install () {
-	pacman -S --noconfirm "$@"
+	sudo pacman -S --noconfirm "$@"
 }
 
-dinitctl enable NetworkManager
+sudo dinitctl enable NetworkManager
 
 #-------------------------------------------------------------------------
 # Graphic Environment	
 #-------------------------------------------------------------------------
 
-pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
+sudo pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 #-------------------------------------------------------------------------
 # Graphic Drivers	
@@ -25,14 +25,14 @@ pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 gpu_type=$(lspci)
 if grep -E "NVIDIA|GeForce" <<< "${gpu_type}"; then
-    pacman -S --noconfirm --needed nvidia
+    sudo pacman -S --noconfirm --needed nvidia
 	nvidia-xconfig
 elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
-    pacman -S --noconfirm --needed xf86-video-amdgpu
+    sudo pacman -S --noconfirm --needed xf86-video-amdgpu
 elif grep -E "Integrated Graphics Controller" <<< "${gpu_type}"; then
-    pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+    sudo pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
 elif grep -E "Intel Corporation UHD" <<< "${gpu_type}"; then
-    pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+    sudo pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
 fi
 
 #-------------------------------------------------------------------------
@@ -67,7 +67,7 @@ install "${fonts[@]}"
 # Autologin	
 #-------------------------------------------------------------------------
 
-sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
+sudo sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
 
 #-------------------------------------------------------------------------
 # Personal Setup		
@@ -88,7 +88,7 @@ dirs=(
 	"docs/templates"
 	"docs/public"
 )
-mkdirs /home/sacresful/"${dirs[@]}"
+mkdirs /home/$(whoami)/"${dirs[@]}" 
 
 apps=(
 	"zsh" # main shell
@@ -170,39 +170,39 @@ usermod -aG libvirt
 # Firewall Setup		
 #-------------------------------------------------------------------------
 
-ufw limit 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw default deny incoming
-ufw default allow outgoing
-ufw enable
-ufw allow CIFS
-ufw app update Samba
-echo "[Samba]
+sudo ufw limit 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw enable
+sudo ufw allow CIFS
+sudo ufw app update Samba
+sudo echo "[Samba]
 title=LanManager-like file and printer server for Unix
 description=The Samba software suite is a collection of programs that implements the SMB/CIFS protocol for unix systems, allowing you to serve files and printers to Windows, NT, OS/2 and DOS clients. This protocol is sometimes also referred to as the LanManager or NetBIOS protocol.
 ports=137,138/udp|139,445/tcp" >> /etc/ufw/applications.d/samba
-ufw allow Samba
-ufw allow 4000/tcp
-ufw allow 6112/tcp
+sudo ufw allow Samba
+sudo ufw allow 4000/tcp
+sudo ufw allow 6112/tcp
 
 #-------------------------------------------------------------------------
 # Enable Services		
 #-------------------------------------------------------------------------
 
-dinitctl enable ufw
-dinitctl enable cupsd
-dinitctl enable cronie
-dinitctl enable sshd
-dinitctl enable libvirtd
-dinitctl enable tlp
+sudo dinitctl enable ufw
+sudo dinitctl enable cupsd
+sudo dinitctl enable cronie
+sudo dinitctl enable sshd
+sudo dinitctl enable libvirtd
+sudo dinitctl enable tlp
 
 #-------------------------------------------------------------------------
 # Install AUR Helper		
 #-------------------------------------------------------------------------
 
 cd repos || exit
-git clone https://aur.archlinux.org/paru.git
+git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos
 cd paru || exit
 makepkg -si
 
@@ -219,17 +219,17 @@ ln -sf /usr/bin/dash /bin/sh
 # Set the default termial shell to zsh 
 #-------------------------------------------------------------------------
 
-echo "export ZDOTDIR=$HOME/.config/zsh" | tee -a /etc/zsh/zshenv > /dev/null
-chsh -s /bin/zsh sacresful
+echo "export ZDOTDIR=/home/$(whoami)/.config/zsh" | sudo tee -a /etc/zsh/zshenv > /dev/null
+chsh -s /bin/zsh $(whoami)
 
 #-------------------------------------------------------------------------
 # Get the desktop environment files 
 #-------------------------------------------------------------------------
 
-cp -R /root/dotfiles/.config /home/"$USERNAME"/
-cp -R /root/dotfiles/.local /home/"$USERNAME"/
+cp -R /home/$(whoami)/dotfiles/.config /home/$(whoami)/
+cp -R /home/$(whoami)/dotfiles/.local /home/$(whoami)/
 
-cd /home/"$USERNAME"/.config/suckless/dwm || exit
+cd /home/$(whoami)/.config/suckless/dwm || exit
 make install
 cd .. 
 cd dmenu || exit
@@ -242,6 +242,4 @@ cd st || exit
 make install
 cd || exit
 
-rm -rf /home/"$USERNAME"/*																																														
-	
-cp "$LOGFILE" /home/"$USERNAME"/personalbootstrap.log
+rm -rf /home/$(whoami)/*																													
