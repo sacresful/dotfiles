@@ -20,7 +20,7 @@ sudo dinitctl enable NetworkManager
 pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 #-------------------------------------------------------------------------
-#						   Graphic Drivers	
+# Graphic Drivers	
 #-------------------------------------------------------------------------
 
 gpu_type=$(lspci)
