@@ -163,8 +163,8 @@ xdg-user-dirs-update
 # Virtualization		
 #-------------------------------------------------------------------------
 
-pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
-usermod -aG libvirt
+sudo pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
+sudo usermod -aG libvirt $(whoami)
 
 #-------------------------------------------------------------------------
 # Firewall Setup		
@@ -181,7 +181,7 @@ sudo ufw app update Samba
 sudo echo "[Samba]
 title=LanManager-like file and printer server for Unix
 description=The Samba software suite is a collection of programs that implements the SMB/CIFS protocol for unix systems, allowing you to serve files and printers to Windows, NT, OS/2 and DOS clients. This protocol is sometimes also referred to as the LanManager or NetBIOS protocol.
-ports=137,138/udp|139,445/tcp" >> /etc/ufw/applications.d/samba
+ports=137,138/udp|139,445/tcp" | sudo tee -a /etc/ufw/applications.d/samba > /dev/null
 sudo ufw allow Samba
 sudo ufw allow 4000/tcp
 sudo ufw allow 6112/tcp
@@ -202,7 +202,7 @@ sudo dinitctl enable tlp
 #-------------------------------------------------------------------------
 
 cd repos || exit
-git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos
+git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos/paru
 cd paru || exit
 makepkg -si
 
