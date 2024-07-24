@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #-------------------------------------------------------------------------
-#							Basic Setup
+# Basic Setup
 #-------------------------------------------------------------------------
 
 LOGFILE=/root/personalbootstrap.log
@@ -14,7 +14,7 @@ install () {
 sudo dinitctl enable NetworkManager
 
 #-------------------------------------------------------------------------
-#						  Graphic Environment	
+# Graphic Environment	
 #-------------------------------------------------------------------------
 
 pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
@@ -36,7 +36,7 @@ elif grep -E "Intel Corporation UHD" <<< "${gpu_type}"; then
 fi
 
 #-------------------------------------------------------------------------
-#			  					Audio	
+# Audio	
 #-------------------------------------------------------------------------
 
 audio_programs=(
@@ -52,7 +52,7 @@ audio_programs=(
 install "${audio_programs[@]}"
 
 #-------------------------------------------------------------------------
-#			   					Fonts	
+# Fonts	
 #-------------------------------------------------------------------------
 
 fonts=(
@@ -64,13 +64,13 @@ fonts=(
 install "${fonts[@]}"
 
 #-------------------------------------------------------------------------
-#			   				  Autologin	
+# Autologin	
 #-------------------------------------------------------------------------
 
 sed -i "s/agetty --noclear/agetty -a $(whoami) --noclear/" /etc/dinit.d/tty1
 
 #-------------------------------------------------------------------------
-#			   				Personal Setup		
+# Personal Setup		
 #-------------------------------------------------------------------------
 
 mkdirs () {
@@ -160,14 +160,14 @@ install "${apps[@]}"
 xdg-user-dirs-update
 
 #-------------------------------------------------------------------------
-#			   Virtualization		
+# Virtualization		
 #-------------------------------------------------------------------------
 
 pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
 usermod -aG libvirt
 
 #-------------------------------------------------------------------------
-#			   Firewall Setup		
+# Firewall Setup		
 #-------------------------------------------------------------------------
 
 ufw limit 22/tcp
@@ -187,7 +187,7 @@ ufw allow 4000/tcp
 ufw allow 6112/tcp
 
 #-------------------------------------------------------------------------
-#			   Enable Services		
+# Enable Services		
 #-------------------------------------------------------------------------
 
 dinitctl enable ufw
@@ -198,7 +198,7 @@ dinitctl enable libvirtd
 dinitctl enable tlp
 
 #-------------------------------------------------------------------------
-#			  Install AUR Helper		
+# Install AUR Helper		
 #-------------------------------------------------------------------------
 
 cd repos || exit
@@ -210,20 +210,20 @@ makepkg -si
 #yay ueberzugpp # ueberzug
 
 #-------------------------------------------------------------------------
-#		 Set the default shell to dash 
+# Set the default shell to dash 
 #-------------------------------------------------------------------------
 
 ln -sf /usr/bin/dash /bin/sh
 
 #-------------------------------------------------------------------------
-#		 Set the default termial shell to zsh 
+# Set the default termial shell to zsh 
 #-------------------------------------------------------------------------
 
 echo "export ZDOTDIR=$HOME/.config/zsh" | sudo tee -a /etc/zsh/zshenv > /dev/null
 chsh -s /bin/zsh sacresful
 
 #-------------------------------------------------------------------------
-#		 	Get the desktop environment files 
+# Get the desktop environment files 
 #-------------------------------------------------------------------------
 
 cp -R /root/dotfiles/.config /home/"$USERNAME"/

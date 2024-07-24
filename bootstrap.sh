@@ -1,95 +1,97 @@
 #!/bin/sh
 
 #-------------------------------------------------------------------------
-#								Basic Setup
+# Basic Setup
 #-------------------------------------------------------------------------
 
 LOGFILE=/home/artix/bootstrap.log
 exec > >(tee -a "$LOGFILE") 2>&1
-
-#-------------------------------------------------------------------------
-#								Functions
-#-------------------------------------------------------------------------
 
 install () {
 	basestrap /mnt "$@"
 }
 
 #-------------------------------------------------------------------------
-#						Installing Prerequisites
+# Installing Prerequisites
 #-------------------------------------------------------------------------
 
 pacman -S --noconfirm --needed gptfdisk pacman-contrib btrfs-progs
 
 #-------------------------------------------------------------------------
-#							Formatting Drives
+# Formatting Drives
 #-------------------------------------------------------------------------
 
+clear
+VALID_DEVICES=$(lsblk -d -o NAME | grep -E "sd|nvme|vd")
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
 while true 
 do
 	read -rp "Choose a drive to install linux on. " DRIVE
-		read -rp "Which partition scheme, gpt or mbr? " PARTITION
-		case $PARTITION in
-			[Mm][Bb][Rr]$)
-				if [ -b "/dev/$DRIVE" ]; then
-				echo "o
-				w
-				" | fdisk /dev/"$DRIVE"
+		if echo "$VALID_DEVICES" | grep -qw "$DRIVE"; then
+			read -rp "Which partition scheme, gpt or mbr? " PARTITION
+			case $PARTITION in
+				[Mm][Bb][Rr])
+					if [ -b "/dev/$DRIVE" ]; then
+					echo "o
+					w
+					" | fdisk /dev/"$DRIVE"
 
-				(
-				echo n  # Add a new partition
-    			echo p  # Primary partition
-				echo 1  # Partition number
-				echo    # First sector (Accept default: 1)
-				echo +1G  # Last sector (1 GiB)
-				echo a  # Make it bootable
-				echo 1  # Partition number 
+					(
+					echo n  # Add a new partition
+					echo p  # Primary partition
+					echo 1  # Partition number
+					echo    # First sector (Accept default: 1)
+					echo +1G  # Last sector (1 GiB)
+					echo a  # Make it bootable
+					echo 1  # Partition number 
 
-				echo n  # Add a new partition
-				echo p  # Primary partition
-				echo 2  # Partition number
-				echo    # First sector (Accept default)
-				echo -5G  # Last sector (5 GiB before the end of the disk)
+					echo n  # Add a new partition
+					echo p  # Primary partition
+					echo 2  # Partition number
+					echo    # First sector (Accept default)
+					echo -5G  # Last sector (5 GiB before the end of the disk)
 
-				echo n  # Add a new partition
-				echo p  # Primary partition
-				echo 3  # Partition number
-				echo    # First sector (Accept default)
-				echo +4G  # Last sector (4 GiB)
-				echo t  # Change the partition type
-				echo 3  # Partition number
-				echo 82  # Linux swap partition type code (8200)
-				echo w  # Write changes
-				) | fdisk /dev/"$DRIVE"
-				break
-				fi
-			;;
-			[Gg][Pp][Tt]$)
-				if [ -b "/dev/$DRIVE" ]; then
-					sgdisk -Z /dev/"$DRIVE"
-					sgdisk -a 2048 -o /dev/"$DRIVE"
-					if [ ! -d "/sys/firmware/efi" ]; then
-						sgdisk -n 1::+1G --typecode=1:ef02 /dev/"$DRIVE"
-					else
-						sgdisk -n 1::+1G --typecode=1:ef00 /dev/"$DRIVE"
-					fi
-					sgdisk -n 2::-5G --typecode=2:8300 /dev/"$DRIVE"
-					sgdisk -n 3::+4G --typecode=3:8200 /dev/"$DRIVE"
+					echo n  # Add a new partition
+					echo p  # Primary partition
+					echo 3  # Partition number
+					echo    # First sector (Accept default)
+					echo +4G  # Last sector (4 GiB)
+					echo t  # Change the partition type
+					echo 3  # Partition number
+					echo 82  # Linux swap partition type code (8200)
+					echo w  # Write changes
+					) | fdisk /dev/"$DRIVE"
 					break
-				else
-				echo "Invalid drive."
-				fi	
+					fi
 				;;
-			*)
-				echo "Enter GPT or MBR."
-				;;
-		esac
+				[Gg][Pp][Tt])
+					if [ -b "/dev/$DRIVE" ]; then
+						sgdisk -Z /dev/"$DRIVE"
+						sgdisk -a 2048 -o /dev/"$DRIVE"
+						if [ ! -d "/sys/firmware/efi" ]; then
+							sgdisk -n 1::+1G --typecode=1:ef02 /dev/"$DRIVE"
+						else
+							sgdisk -n 1::+1G --typecode=1:ef00 /dev/"$DRIVE"
+						fi
+						sgdisk -n 2::-5G --typecode=2:8300 /dev/"$DRIVE"
+						sgdisk -n 3::+4G --typecode=3:8200 /dev/"$DRIVE"
+						break
+					else
+					echo "Invalid drive."
+					fi	
+					;;
+				*)
+					echo "Enter GPT or MBR."
+					;;
+			esac
+		else
+			echo "Enter proper drive."
+		fi
 done	
 partprobe "${DRIVE}"
 
 #-------------------------------------------------------------------------
-#							Creating Filesystems
+# Creating Filesystems
 #-------------------------------------------------------------------------
 
 while true 
@@ -144,7 +146,7 @@ done
 mkswap /dev/"${DRIVE}"3
 
 #-------------------------------------------------------------------------
-#							 Mounting Drives
+# Mounting Drives
 #-------------------------------------------------------------------------
 
 if [ "$ENCRYPTED" = true ]; then
@@ -165,13 +167,13 @@ fi
 swapon /dev/"${DRIVE}"3
 
 #-------------------------------------------------------------------------
-#						  Parrallel Downloads
+# Parrallel Downloads
 #-------------------------------------------------------------------------
 
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
 #-------------------------------------------------------------------------
-#						  Setting Up Mirrors
+# Setting Up Mirrors
 #-------------------------------------------------------------------------
 
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlistOG
@@ -182,7 +184,7 @@ mv /etc/pacman.d/mirrorlist /etc/pacman.d/artixmirrorlist
 mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 
 #-------------------------------------------------------------------------
-#							Installing Linux
+# Installing Linux
 #-------------------------------------------------------------------------
 
 system=(
@@ -206,14 +208,14 @@ fi
 
 
 #-------------------------------------------------------------------------
-#						  Generating Fstab
+# Generating Fstab
 #-------------------------------------------------------------------------
 
 fstabgen -U /mnt >> /mnt/etc/fstab
 
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
-#						Installing Base System
+# Installing Base System
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
 
@@ -240,7 +242,7 @@ do
 done
 
 #-------------------------------------------------------------------------
-#						    Creating a User
+# Creating a User
 #-------------------------------------------------------------------------
 
 while true
@@ -255,7 +257,7 @@ do
 done
 
 #-------------------------------------------------------------------------
-#						Setting User's Password
+# Setting User's Password
 #-------------------------------------------------------------------------
 
 while true
@@ -281,7 +283,7 @@ do
 done
 
 #-------------------------------------------------------------------------
-#							 Set Hostname
+# Set Hostname
 #-------------------------------------------------------------------------
 
 while true
@@ -295,7 +297,7 @@ do
 done
 
 #-------------------------------------------------------------------------
-#							Set Timezone
+# Set Timezone
 #-------------------------------------------------------------------------
 
 while true
@@ -316,7 +318,7 @@ do
 done
 
 #-------------------------------------------------------------------------
-#			      Chrooting into newly installed system
+# Chrooting into newly installed system
 #-------------------------------------------------------------------------
 
 artix-chroot /mnt << EOF
