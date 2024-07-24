@@ -17,7 +17,7 @@ sudo dinitctl enable NetworkManager
 # Graphic Environment	
 #-------------------------------------------------------------------------
 
-pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
+sudo pacman -Sy --noconfirm xorg xorg-xinit xorg-xrandr
 
 #-------------------------------------------------------------------------
 # Graphic Drivers	
@@ -88,7 +88,7 @@ dirs=(
 	"docs/templates"
 	"docs/public"
 )
-mkdirs "${dirs[@]}"
+mkdirs /home/sacresful/"${dirs[@]}"
 
 apps=(
 	"zsh" # main shell

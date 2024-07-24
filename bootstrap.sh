@@ -77,7 +77,7 @@ read -rp "Choose a drive to install linux on. " DRIVE
 	fi	
 done
 clear
-partprobe "${DRIVE}"
+partprobe /dev/"${DRIVE}"
 
 #-------------------------------------------------------------------------
 # Creating Filesystems
@@ -385,3 +385,4 @@ grub-mkconfig -o /boot/grub/grub.cfg
 EOF
 
 cp "$LOGFILE" /mnt/home/"$USERNAME"/bootstrap.log
+git clone https://github.com/sacresful/dotfiles /mnt/home/"$USERNAME"/dotfiles
