@@ -24,8 +24,7 @@ pacman -S --noconfirm --needed gptfdisk pacman-contrib btrfs-progs parted
 clear
 VALID_DEVICES=$(lsblk -d -o NAME | grep -E "sd|nvme|vd")
 lsblk -d -o NAME,SIZE,MODEL | grep -E "sd|nvme|vd"
-while true 
-do
+while true; do
 read -rp "Choose a drive to install linux on. " DRIVE
 	if [ ! -d "/sys/firmware/efi" ]; then
 		if [ -b "/dev/$DRIVE" ]; then
@@ -83,8 +82,7 @@ partprobe /dev/"${DRIVE}"
 # Creating Filesystems
 #-------------------------------------------------------------------------
 
-while true 
-do
+while true; do
 	read -rp "Encrypted installation? Y/N " TYPE
 	case $TYPE in 
 		[Yy][Ee][Ss] | [Yy])
@@ -108,9 +106,7 @@ if [ "$ENCRYPTED" = true ]; then
 	cryptsetup open /dev/"${DRIVE}"2 cryptlvm
 fi
 
-while true
-do
-
+while true; do
 read -rp "Which filesystem: ext4 / btrfs? " FILESYSTEM 
 	case $FILESYSTEM in
 		ext4)
@@ -208,8 +204,7 @@ fstabgen -U /mnt >> /mnt/etc/fstab
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
 
-while true
-do
+while true; do
 	read -rsp "Enter root password: " ROOTPASS
 	echo
 	if [ -z "$ROOTPASS" ]; then
@@ -234,8 +229,7 @@ done
 # Creating a User
 #-------------------------------------------------------------------------
 
-while true
-do
+while true; do
 	read -rp "Enter username: " USERNAME
 	
 	if [ -z "$USERNAME" ]; then
@@ -249,8 +243,7 @@ done
 # Setting User's Password
 #-------------------------------------------------------------------------
 
-while true
-do
+while true; do
 	read -rsp "Enter user password: " PASS
 	echo
 	if [ -z "$PASS" ]; then
@@ -275,8 +268,7 @@ done
 # Set Hostname
 #-------------------------------------------------------------------------
 
-while true
-do
+while true; do
 	read -rp "Enter hostname: " SETHOSTNAME
 	if [ -z "$SETHOSTNAME" ]; then
 		echo "Enter valid hostname."
@@ -289,8 +281,7 @@ done
 # Set Timezone
 #-------------------------------------------------------------------------
 
-while true
-do
+while true; do
 	read -rp "Enter your region: " REGION
 	if [ -f "/usr/share/zoneinfo/$REGION" ]; then
 		break
