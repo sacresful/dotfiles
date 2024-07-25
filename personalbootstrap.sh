@@ -209,6 +209,8 @@ git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos/paru
 cd paru || exit
 makepkg -si
 
+paru -S --noconfirm xdg-ninja
+
 #yay ookla-speedtest-bin # speedtest
 #yay ueberzugpp # ueberzug
 
@@ -228,7 +230,9 @@ chsh -s /bin/zsh $(whoami)
 #-------------------------------------------------------------------------
 # Get the desktop environment files 
 #-------------------------------------------------------------------------
-
+rm -rf /home/$(whoami)/.bash_logout				
+rm -rf /home/$(whoami)/.bash_profile
+rm -rf /home/$(whoami)/.bashrc	
 cp -R /home/$(whoami)/dotfiles/.config /home/$(whoami)/
 cp -R /home/$(whoami)/dotfiles/.local /home/$(whoami)/
 
@@ -245,5 +249,4 @@ cd st || exit
 sudo make install
 cd || exit
 
-rm -rf /home/$(whoami)/dotfiles				
-rm -rf /home/$(whoami)/																									
+rm -rf /home/$(whoami)/dotfiles																			
