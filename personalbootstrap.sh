@@ -261,4 +261,5 @@ cd || exit
 
 rm -rf /home/$(whoami)/dotfiles			
 
-exit																
+exit
+															
