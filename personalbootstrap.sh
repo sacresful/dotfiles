@@ -14,7 +14,7 @@ install () {
 sudo dinitctl enable NetworkManager
 
 while true; do
-	if ping -c 3 8.8.8.8 &> /dev/null; then
+	if ping -c 4 8.8.8.8 &> /dev/null; then
 		echo "Connected to internet"
 		break
 	else
@@ -175,7 +175,7 @@ install "${apps[@]}"
 #-------------------------------------------------------------------------
 
 sudo pacman -S --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libvirt libvirt-dinit 
-sudo usermod -aG libvirt $(whoami)
+sudo usermod -aG libvirt "$(whoami)"
 
 #-------------------------------------------------------------------------
 # Firewall Setup		
@@ -213,7 +213,7 @@ sudo dinitctl enable tlp
 #-------------------------------------------------------------------------
 
 cd repos || exit
-git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos/paru
+git clone https://aur.archlinux.org/paru.git /home/"$(whoami)"/repos/paru
 cd paru || exit
 makepkg -si --noconfirm
 
@@ -233,20 +233,20 @@ sudo ln -sf /usr/bin/dash /bin/sh
 #-------------------------------------------------------------------------
 
 echo "export ZDOTDIR=/home/$(whoami)/.config/zsh" | sudo tee -a /etc/zsh/zshenv > /dev/null
-chsh -s /bin/zsh $(whoami)
+chsh -s /bin/zsh "$(whoami)"
 
 #-------------------------------------------------------------------------
 # Get the desktop environment files 
 #-------------------------------------------------------------------------
-rm -rf /home/$(whoami)/.bash_logout				
-rm -rf /home/$(whoami)/.bash_profile
-rm -rf /home/$(whoami)/.bashrc	
-cp -R /home/$(whoami)/dotfiles/.config /home/$(whoami)/
-cp -R /home/$(whoami)/dotfiles/.local /home/$(whoami)/
+rm -rf /home/"$(whoami)"/.bash_logout				
+rm -rf /home/"$(whoami)"/.bash_profile
+rm -rf /home/"$(whoami)"/.bashrc	
+cp -R /home/"$(whoami)"/dotfiles/.config /home/"$(whoami)"/
+cp -R /home/"$(whoami)"/dotfiles/.local /home/"$(whoami)"/
 
 xdg-user-dirs-update
 
-cd /home/$(whoami)/.config/suckless/dwm || exit
+cd /home/"$(whoami)"/.config/suckless/dwm || exit
 sudo make install
 cd .. 
 cd dmenu || exit
@@ -259,7 +259,9 @@ cd st || exit
 sudo make install
 cd || exit
 
-rm -rf /home/$(whoami)/dotfiles			
+git clone https://github.com/zdharma-continuum/fast-syntax-highlighting /home/"$USERNAME"/.config/zsh/fast-syntax-highlighting
+
+rm -rf /home/"$(whoami)"/dotfiles			
 
 exit
 															
