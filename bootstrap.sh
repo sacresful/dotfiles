@@ -384,3 +384,6 @@ EOF
 
 cp "$LOGFILE" /mnt/home/"$USERNAME"/bootstrap.log
 git clone https://github.com/sacresful/dotfiles /mnt/home/"$USERNAME"/dotfiles
+
+chown "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/bootstrap.log
+chown -R "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/dotfiles

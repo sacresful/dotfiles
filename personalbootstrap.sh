@@ -13,6 +13,15 @@ install () {
 
 sudo dinitctl enable NetworkManager
 
+while true; do
+if ping -c 3 8.8.8.8 &> /dev/null; then
+	echo "Connected to internet"
+	break
+else
+	echo "No connection to internet"
+	exit 1
+done
+
 #-------------------------------------------------------------------------
 # Graphic Environment	
 #-------------------------------------------------------------------------
