@@ -157,10 +157,8 @@ apps=(
 
 install "${apps[@]}"
 
-xdg-user-dirs-update
-
-cd /home/($whoami)/
-rm -rf Downloads Music Public Templates Videos Documents Desktop Pictures
+#cd /home/($whoami)/
+#rm -rf Downloads Music Public Templates Videos Documents Desktop Pictures
 
 #-------------------------------------------------------------------------
 # Virtualization		
@@ -235,6 +233,8 @@ rm -rf /home/$(whoami)/.bash_profile
 rm -rf /home/$(whoami)/.bashrc	
 cp -R /home/$(whoami)/dotfiles/.config /home/$(whoami)/
 cp -R /home/$(whoami)/dotfiles/.local /home/$(whoami)/
+
+xdg-user-dirs-update
 
 cd /home/$(whoami)/.config/suckless/dwm || exit
 sudo make install

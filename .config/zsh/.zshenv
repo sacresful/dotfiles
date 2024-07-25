@@ -8,6 +8,7 @@ export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 #export XAUTHORITY="$XDG_RUNTIME_DIR"/Xauthority
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
+export LESSHISTFILE="$XDG_STATE_HOME"/less/history
 
 export PATH=$PATH:$HOME/.local/bin
 export PATH=$PATH:$HOME/.local/bin/statusbar
