@@ -249,4 +249,6 @@ cd st || exit
 sudo make install
 cd || exit
 
-rm -rf /home/$(whoami)/dotfiles																			
+rm -rf /home/$(whoami)/dotfiles			
+
+exit																
