@@ -14,12 +14,13 @@ install () {
 sudo dinitctl enable NetworkManager
 
 while true; do
-if ping -c 3 8.8.8.8 &> /dev/null; then
-	echo "Connected to internet"
-	break
-else
-	echo "No connection to internet"
-	exit 1
+	if ping -c 3 8.8.8.8 &> /dev/null; then
+		echo "Connected to internet"
+		break
+	else
+		echo "No connection to internet"
+		exit 1
+	fi
 done
 
 #-------------------------------------------------------------------------
@@ -214,7 +215,7 @@ sudo dinitctl enable tlp
 cd repos || exit
 git clone https://aur.archlinux.org/paru.git /home/$(whoami)/repos/paru
 cd paru || exit
-makepkg -si
+makepkg -si --noconfirm
 
 paru -S --noconfirm xdg-ninja
 
