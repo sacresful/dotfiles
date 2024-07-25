@@ -87,11 +87,11 @@ while true
 do
 	read -rp "Encrypted installation? Y/N " TYPE
 	case $TYPE in 
-		[Yy][Ee][Ss]$ | [Yy])
+		[Yy][Ee][Ss] | [Yy])
 			ENCRYPTED=true
 			break
 			;;
-		[Nn][Oo]$ | [Nn])
+		[Nn][Oo] | [Nn])
 			ENCRYPTED=false
 			break
 			;;
