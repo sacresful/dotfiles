@@ -88,7 +88,7 @@ dirs=(
 	"docs/templates"
 	"docs/public"
 )
-mkdirs /home/$(whoami)/"${dirs[@]}" 
+mkdirs "${dirs[@]}" 
 
 apps=(
 	"zsh" # main shell
