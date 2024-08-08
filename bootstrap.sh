@@ -102,7 +102,9 @@ done
 mkfs.fat -F32 /dev/"${DRIVE}"1
 
 if [ "$ENCRYPTED" = true ]; then
+	echo "Enter passphrase for unlocking encrypted drive: "
 	cryptsetup luksFormat /dev/"${DRIVE}"2
+	echo "Enter passphrase to decrypt a drive: "
 	cryptsetup open /dev/"${DRIVE}"2 cryptlvm
 fi
 
@@ -372,7 +374,7 @@ if [ "$ENCRYPTED" = true ]; then
 fi
 
 if [ ! -d "/sys/firmware/efi" ]; then
-	grub-install --recheck /dev/"$DRIVE"
+	grub-install /dev/"$DRIVE"
 else
 	pacman -S os-prober efibootmgr
 	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/"$DRIVE"
@@ -380,7 +382,7 @@ fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
-git clone https://github.com/sacresful/dotfiles /home/"$USERNAME"/dotfiles
+git clone https://github.com/sacresful/dotfiles /mnt/home/"$USERNAME"/dotfiles
 chown "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/bootstrap.log
 chown -R "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/dotfiles
 
