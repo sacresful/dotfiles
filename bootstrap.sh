@@ -369,7 +369,7 @@ fi
 if [ "$ENCRYPTED" = true ]; then
 	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
 	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
-	sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="quiet splash/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
+	sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="[^"]*"/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
 	#sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
 fi
 
@@ -383,10 +383,10 @@ fi
 grub-mkconfig -o /boot/grub/grub.cfg
 
 git clone https://github.com/sacresful/dotfiles /mnt/home/"$USERNAME"/dotfiles
-chown "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/bootstrap.log
+.log
 chown -R "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/dotfiles
 
 EOF
 
 cp "$LOGFILE" /mnt/home/"$USERNAME"/bootstrap.log
-
+chown "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/bootstrap
