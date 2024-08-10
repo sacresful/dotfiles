@@ -330,10 +330,10 @@ locale-gen
 
 nc=$(grep -c ^processor /proc/cpuinfo)
 TOTAL_MEM=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')
-if [[  $TOTAL_MEM -gt 8000000 ]]; then
 sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$nc\"/g" /etc/makepkg.conf
 sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T $nc -z -)/g" /etc/makepkg.conf
-fi
+#if [  $TOTAL_MEM -gt 8000000 ]; then
+#fi
 
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
@@ -345,6 +345,8 @@ mv /etc/pacman.d/mymirrorlist /etc/pacman.d/mirrorlist
 pacman -Sy --noconfirm artix-archlinux-support
 
 sed -i "/\[lib32]/,/Include'"'s/^#//' /etc/pacman.conf
+
+#Here is the error
 
 echo "
 # Arch
@@ -365,10 +367,7 @@ if [ "$ENCRYPTED" = true ]; then
 	sed -i 's/filesystems/encrypt lvm2 filesystems/g' /etc/mkinitcpio.conf
 	mkinitcpio -p linux
 
-	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}2" | awk -F '\"' '/UUID=/{print $2}')
-	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F '\"' '/UUID=/{print $2}')
-	sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\"|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID\"|" /etc/default/grub
-
+	sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\"|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash cryptdevice=UUID="$(blkid | grep "^/dev/${DRIVE}2" | awk -F '\"' '/UUID=/{print $2}')":cryptlvm root=UUID="$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F '\"' '/UUID=/{print $2}')"\"|" /etc/default/grub
 fi
 
 if [ ! -d "/sys/firmware/efi" ]; then
