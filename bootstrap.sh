@@ -365,7 +365,7 @@ if [ "$ENCRYPTED" = true ]; then
 	sed -i 's/filesystems/encrypt lvm2 filesystems/g' /etc/mkinitcpio.conf
 	mkinitcpio -p linux
 
-	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | awk -F '\"' '/UUID=/{print $2}')
+	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}2" | awk -F '\"' '/UUID=/{print $2}')
 	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F '\"' '/UUID=/{print $2}')
 	sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\"|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID\"|" /etc/default/grub
 
@@ -383,7 +383,6 @@ fi
 grub-mkconfig -o /boot/grub/grub.cfg
 
 git clone https://github.com/sacresful/dotfiles /mnt/home/"$USERNAME"/dotfiles
-.log
 chown -R "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/dotfiles
 
 EOF
