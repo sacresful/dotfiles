@@ -367,8 +367,8 @@ if [ "$ENCRYPTED" = true ]; then
 fi
 
 if [ "$ENCRYPTED" = true ]; then
-	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
-	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | sed -n 's/.*UUID="\([^"]*\)".*/\1/p')
+	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | awk -F'\"' '/UUID=/{print $2}'
+	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F'\"' '/UUID=/{print $2}'
 	#sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="[^"]*"/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
 	sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\"|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID\"|" /etc/default/grub
 	#sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
