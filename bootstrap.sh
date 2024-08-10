@@ -367,8 +367,8 @@ if [ "$ENCRYPTED" = true ]; then
 fi
 
 if [ "$ENCRYPTED" = true ]; then
-	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | awk -F'\"' '/UUID=/{print $2}'
-	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F'\"' '/UUID=/{print $2}'
+	ENCRYPTEDUUID=$(blkid | grep "^/dev/${DRIVE}3" | awk -F '\"' '/UUID=/{print $2}'
+	DECRYPTEDUUID=$(blkid | grep "^/dev/mapper/cryptlvm" | awk -F '\"' '/UUID=/{print $2}'
 	#sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT="[^"]*"/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID/" /etc/default/grub
 	sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\"|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash cryptdevice=UUID=$ENCRYPTEDUUID:cryptlvm root=UUID=$DECRYPTEDUUID\"|" /etc/default/grub
 	#sed -i "s|^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\(\"\)|\GRUB_CMDLINE_LINUX_DEFAULT="quiet splash cryptdevice=UUID="$ENCRYPTEDUUID":cryptlvm root=UUID="$DECRYPTEDUUID" \2|"" "/etc/default/grub"
@@ -379,6 +379,7 @@ if [ ! -d "/sys/firmware/efi" ]; then
 else
 	pacman -S os-prober efibootmgr
 	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub /dev/"$DRIVE"
+	# --removable if needed
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
@@ -390,4 +391,4 @@ chown -R "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/dotfiles
 EOF
 
 cp "$LOGFILE" /mnt/home/"$USERNAME"/bootstrap.log
-chown "$USERNAME":"$USERNAME" /mnt/home/"$USERNAME"/bootstrap
+
