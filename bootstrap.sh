@@ -359,10 +359,6 @@ Include = /etc/pacman.d/mirrorlist-arch
 [multilib]
 Include = /etc/pacman.d/mirrorlist-arch" >> /etc/pacman.conf
 
-#-------------------------------------------------------------------------
-#			Encrypted Installation Features
-#-------------------------------------------------------------------------
-
 if [ "$ENCRYPTED" = true ]; then
 	sed -i 's/filesystems/encrypt lvm2 filesystems/g' /etc/mkinitcpio.conf
 	mkinitcpio -p linux
